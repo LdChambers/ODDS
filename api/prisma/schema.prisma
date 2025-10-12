@@ -1,0 +1,323 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  userID               Int       @id @default(autoincrement())
+  fk_schoolID          Int
+  firstName            String
+  lastName             String
+  email                String
+  password             String
+  role                 String    @default("instructor") // instructor, admin
+  hasGlobalPermissions Int       @default(0)
+  createdAt            DateTime? @default(now())
+  updatedAt            DateTime?
+  deletedAt            DateTime?
+
+  school School @relation(fields: [fk_schoolID], references: [schoolID])
+
+  @@unique([fk_schoolID, email])
+  @@index([deletedAt])
+}
+
+model School {
+  schoolID              Int       @id @default(autoincrement())
+  fk_courseProviderID   Int?      @default(1)
+  fk_defaultLocationID  Int?
+  defaultDayOfWeek      Int       @default(1)
+  name                  String?
+  shortName             String?
+  addressLine1          String?
+  addressLine2          String?
+  city                  String?
+  fk_stateID            Int?
+  zipCode               String?
+  phoneNumber           String?
+  url                   String?
+  email                 String?
+  contactName           String?
+  notes                 String?
+  createdAt             DateTime? @default(now())
+  updatedAt             DateTime?
+  deletedAt             DateTime?
+
+  users     User[]
+  classes   Class[]
+  students  Student[]
+  locations Location[]
+
+  @@index([deletedAt])
+}
+
+model Class {
+  classID        Int       @id @default(autoincrement())
+  fk_schoolID    Int?
+  fk_locationID  Int?
+  fk_courseID    Int
+  fk_InstructorID Int?
+  amountPaid     Float     @default(0.00)
+  completionDate DateTime?
+  notes          String?
+  createdAt      DateTime? @default(now())
+  updatedAt      DateTime?
+  deletedAt      DateTime?
+
+  school     School?     @relation(fields: [fk_schoolID], references: [schoolID])
+  location   Location?   @relation(fields: [fk_locationID], references: [locationID])
+  course     Course      @relation(fields: [fk_courseID], references: [courseID])
+  instructor Instructor? @relation(fields: [fk_InstructorID], references: [instructorID])
+  students   Student[]
+
+  @@index([deletedAt])
+}
+
+model Student {
+  studentID                  Int       @id @default(autoincrement())
+  fk_schoolID                Int
+  fk_classID                 Int
+  fk_classReasonID           Int?      @default(0)
+  firstName                  String
+  middleInitial              String?
+  lastName                   String
+  addressLine1               String
+  addressLine2               String?
+  fk_stateID                 Int       @default(0)
+  city                       String
+  zipCode                    String
+  phoneNumber                String?
+  email                      String?
+  licenseNumber              String
+  fk_licenseStateID          Int       @default(0)
+  auditNumber                String?
+  ssnLastFour                String?
+  birthDate                  DateTime
+  dateCompleted              DateTime?
+  dateProcessed              DateTime?
+  finalGrade                 Int?      @default(0)
+  fk_ticketingStateID        Int?      @default(0)
+  fk_ticketingCountyID       Int?      @default(0)
+  fk_ticketingJurisdictionID Int?      @default(0)
+  certificateNumber          String?
+  trackingNumber             String?
+  trackingURL                String?
+  shippedEmailSent           Int?      @default(0)
+  fk_deliveryPackageID       Int?      @default(0)
+  fk_drivingRecordPackageID  Int?      @default(0)
+  fk_digitalCopyPackageID    Int?      @default(0)
+  fee                        Float?    @default(10.00)
+  notes                      String?
+  isPaid                     Int       @default(0)
+  createdAt                  DateTime? @default(now())
+  updatedAt                  DateTime?
+  deletedAt                  DateTime?
+
+  school       School       @relation(fields: [fk_schoolID], references: [schoolID])
+  class        Class        @relation(fields: [fk_classID], references: [classID])
+  classReason  ClassReason? @relation(fields: [fk_classReasonID], references: [classReasonID])
+  state        State?       @relation("StudentState", fields: [fk_stateID], references: [stateID])
+  licenseState State?       @relation("StudentLicenseState", fields: [fk_licenseStateID], references: [stateID])
+
+  @@index([fk_schoolID])
+  @@index([fk_stateID])
+  @@index([fk_licenseStateID])
+  @@index([licenseNumber, fk_schoolID])
+  @@index([email, fk_schoolID])
+  @@index([updatedAt])
+  @@index([createdAt])
+  @@index([deletedAt])
+}
+
+model Instructor {
+  instructorID Int       @id @default(autoincrement())
+  lastName     String?
+  firstName    String?
+  addressLine1 String?
+  addressLine2 String?
+  city         String?
+  fk_stateID   Int?
+  zipCode      String?
+  phone        String?
+  email        String?
+  notes        String?
+  createdAt    DateTime? @default(now())
+  updatedAt    DateTime?
+  deletedAt    DateTime?
+
+  classes Class[]
+
+  @@index([lastName, firstName])
+  @@index([deletedAt])
+}
+
+model Location {
+  locationID   Int       @id @default(autoincrement())
+  fk_schoolID  Int       @default(0)
+  number       String    @default("000")
+  name         String?
+  addressLine1 String?
+  addressLine2 String?
+  city         String?
+  fk_stateID   Int
+  zipCode      String?
+  createdAt    DateTime? @default(now())
+  updatedAt    DateTime?
+  deletedAt    DateTime?
+
+  school  School  @relation(fields: [fk_schoolID], references: [schoolID])
+  classes Class[]
+
+  @@index([deletedAt])
+  @@index([name])
+  @@index([number])
+}
+
+model Course {
+  courseID    Int       @id @default(autoincrement())
+  name        String
+  description String?
+  isActive    Int       @default(0)
+  priority    Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime?
+  deletedAt   DateTime?
+
+  classes Class[]
+
+  @@index([deletedAt])
+}
+
+model State {
+  stateID      Int       @id @default(autoincrement())
+  name         String?
+  abbreviation String?
+  priority     Int       @default(99)
+  createdAt    DateTime? @default(now())
+  updatedAt    DateTime?
+  deletedAt    DateTime?
+
+  students             Student[] @relation("StudentState")
+  studentsLicenseState Student[] @relation("StudentLicenseState")
+
+  @@index([abbreviation])
+  @@index([priority])
+  @@index([deletedAt])
+  @@index([name])
+}
+
+model County {
+  countyID   Int       @id @default(autoincrement())
+  name       String?
+  isApproved Int       @default(0)
+  fk_stateID Int       @default(0)
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime?
+  deletedAt  DateTime?
+
+  @@index([fk_stateID])
+  @@index([deletedAt])
+}
+
+model Jurisdiction {
+  jurisdictionID   Int       @id @default(autoincrement())
+  fk_countyID      Int       @default(0)
+  name             String?
+  type             String?
+  typeAbbreviation String?
+  addressLine1     String?
+  addressLine2     String?
+  fk_stateID       Int?      @default(0)
+  city             String?
+  zipCode          String?
+  phoneNumber      String?
+  contactInfo      String?
+  url              String?
+  email            String?
+  createdAt        DateTime? @default(now())
+  updatedAt        DateTime?
+  deletedAt        DateTime?
+
+  @@index([fk_countyID])
+  @@index([fk_stateID])
+  @@index([deletedAt])
+}
+
+model ClassReason {
+  classReasonID  Int       @id @default(autoincrement())
+  name           String?
+  description    String?
+  isDefault      Int?      @default(0)
+  isCourtMandated Int?      @default(1)
+  priority       Int       @default(0)
+  createdAt      DateTime? @default(now())
+  updatedAt      DateTime?
+  deletedAt      DateTime?
+
+  students Student[]
+
+  @@index([deletedAt])
+}
+
+model DeliveryMethod {
+  deliveryMethodID   Int       @id @default(autoincrement())
+  name               String?
+  description        String?
+  price              Float     @default(0.00)
+  cost               Float     @default(0.00)
+  priority           Int       @default(0)
+  isSpecialProcessing Int       @default(0)
+  isDefault          Int       @default(0)
+  emailRequired      Int       @default(0)
+  createdAt          DateTime? @default(now())
+  updatedAt          DateTime?
+  deletedAt          DateTime?
+
+  @@index([priority])
+  @@index([deletedAt])
+}
+
+model Certificate {
+  certificateID            Int       @id @default(autoincrement())
+  fk_courseID              Int       @default(0)
+  fk_stateID               Int
+  certificateNumber        Int       @default(0)
+  maxCertificateNumber     Int       @default(0)
+  backupCertificateNumber  Int?
+  backupMaxCertificateNumber Int?
+  createdAt                DateTime? @default(now())
+  updatedAt                DateTime?
+  deletedAt                DateTime?
+
+  @@unique([fk_stateID])
+  @@index([deletedAt])
+}
+
+model CourseProvider {
+  courseProviderID     Int       @id @default(autoincrement())
+  courseProviderNumber String?
+  name                 String?
+  addressLine1         String?
+  addressLine2         String?
+  city                 String?
+  fk_stateID           Int?
+  zipCode              String?
+  phoneNumber          String?
+  url                  String?
+  email                String?
+  contactName          String?
+  perStudentFee        Float     @default(10)
+  createdAt            DateTime? @default(now())
+  updatedAt            DateTime?
+  deletedAt            DateTime?
+
+  @@index([deletedAt])
+}
+

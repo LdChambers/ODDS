@@ -1,0 +1,84 @@
+Interview Date: 09/16/2025
+Interview Location: Joe’s Pizza on Hulen St
+Meeting Minutes: 2.5 hours
+Participants: 
+●	Ben Hartje
+●	Landen Chambers
+●	Peter Vo
+●	Beau Moody
+●	Alondra Oropeza
+●	Isabella Reyes
+●	Eric Brown (Client)
+Questions of the project pitch:
+Q1: What is something that groups in the past did well and on the flipside what are some areas that you saw could use improvement?
+-	They came up with a good way to store data
+-	Eric wasn’t as prepared as he is this time around (a good definition of what needed to be done)
+-	Getting the tools and other resources to fully take on the project
+-	clear vision of the full timeline of the project
+
+Q2: Can you quantify or explain the impact of the problem you are facing?
+-	no math done yet on amount of time saved
+-	currently they charge $5 for every student and Eric & Co do all the work
+-	future they will charge $10 and use the app
+-	so double the charge and none of the work (since the app will do it all)
+
+Q3: Can you quantify or explain the benefit that this solution would provide (time/money saved)?
+-	Saves Eric and Co a lot of time 
+-	automated certificates, class lists, pulling up records, …etc
+-	putting the workload onto the customers
+
+Q4: Are there any stakeholders for this project beyond your company and the micro-entrepreneur class instructors?
+-	All the instructors and schools they are partnered with in Texas
+
+Q5: Could you explain the process you are trying to automate step-by-step? (How are you currently running these classes?)
+-	How are the certifications currently filled out and distributed?
+-	generate the cert (issuing a number), take the data every so often and export a spreadsheet (CSV) and upload that to the state
+-	How does the payment process currently work?
+-	Students pay 20-30ish bucks for a class, Eric & Co currently take $5 per student for the process of dealing with certificates and student management (instructor gets a base rate as well)
+-	How is reporting to the state done currently?
+-	through a CSV spreadsheet that gets uploaded to the state with students records
+
+Q6: What do you like about the current process that you wish to keep?
+-	still generating certificates 
+-	maybe change to a QR code for students to input their own information
+
+Q7: Is there a reason and method for us to contact the end-users of this product?
+-	Only if app has difficulties after launch
+-	Contact Eric for this if needed
+
+Q8: Are there any related systems that this project will need to interact with?
+-	digital ocean (same premise as AWS)
+-	3 docker servers
+-	2 dedicated databases
+-	seat panel / control web panel
+-	3 cloud panels
+-	PBX server
+-	virtual disk (NAS)
+-	monthly bill for Eric = $630
+-	no dedicated testing environment
+
+Q9: Brooks advice for our group
+-	We need defined roles so we can tackle each part of the app without butting heads
+-	Keep up on documentation so we don’t fall behind
+
+Initial ideas:
+
+
+
+
+
+Constrains:
+
+
+
+
+Open questions:
+●	Could you provide us with an ER Diagram of the database for a higher level view?
+○	table names are always lowercase, no spaces, plural, no special characters
+○	field names no dashes underscores, except FKs (FK-name)
+○	id’s for specific tables is the tablenameID
+○	gui IDs, password encryption generation can be problematic
+
+-	Start with the classroom management portion, and other links to students/classrooms…etc
+-	SMTO to go
+

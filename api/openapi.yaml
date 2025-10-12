@@ -1,0 +1,832 @@
+openapi: 3.1.0
+info:
+  title: Class Management for Driving Safety API
+  version: 1.0.0
+  description: |
+    API for managing driving safety classes, students, instructors, and certificates.
+    Designed for swappable implementation (Node/BoxLang).
+  contact:
+    name: ODDS
+    email: info@odds.com
+
+servers:
+  - url: http://localhost:5001
+    description: Local development server
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
+          type: string
+        role:
+          type: string
+          enum: [admin, instructor]
+        fk_schoolID:
+          type: integer
+        hasGlobalPermissions:
+          type: integer
+          enum: [0, 1]
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    LoginResponse:
+      type: object:
+        token:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+
+    Student:
+      type: object
+      properties:
+        studentID:
+          type: integer
+        fk_schoolID:
+          type: integer
+        fk_classID:
+          type: integer
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        phoneNumber:
+          type: string
+        addressLine1:
+          type: string
+        city:
+          type: string
+        zipCode:
+          type: string
+        licenseNumber:
+          type: string
+        ssnLastFour:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        certificateNumber:
+          type: string
+        isPaid:
+          type: integer
+        dateProcessed:
+          type: string
+          format: date-time
+
+    Class:
+      type: object
+      properties:
+        classID:
+          type: integer
+        fk_schoolID:
+          type: integer
+        fk_locationID:
+          type: integer
+        fk_courseID:
+          type: integer
+        fk_InstructorID:
+          type: integer
+        completionDate:
+          type: string
+          format: date
+        amountPaid:
+          type: number
+        notes:
+          type: string
+
+    Instructor:
+      type: object
+      properties:
+        instructorID:
+          type: integer
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        city:
+          type: string
+
+    Location:
+      type: object
+      properties:
+        locationID:
+          type: integer
+        fk_schoolID:
+          type: integer
+        name:
+          type: string
+        addressLine1:
+          type: string
+        city:
+          type: string
+        zipCode:
+          type: string
+
+    Course:
+      type: object
+      properties:
+        courseID:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        isActive:
+          type: integer
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+
+security:
+  - BearerAuth: []
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      security: []
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  timestamp:
+                    type: string
+
+  /auth/login:
+    post:
+      summary: User login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/forgot-password:
+    post:
+      summary: Request password reset (stub)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+      responses:
+        '200':
+          description: Reset email sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /students:
+    get:
+      summary: List students with search filters (UC-2)
+      parameters:
+        - name: firstName
+          in: query
+          schema:
+            type: string
+        - name: lastName
+          in: query
+          schema:
+            type: string
+        - name: phone
+          in: query
+          schema:
+            type: string
+        - name: email
+          in: query
+          schema:
+            type: string
+        - name: licenseNumber
+          in: query
+          schema:
+            type: string
+        - name: certificateNumber
+          in: query
+          schema:
+            type: string
+        - name: isPaid
+          in: query
+          schema:
+            type: boolean
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: List of students
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  students:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Student'
+                  pagination:
+                    type: object
+
+    post:
+      summary: Create new student
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Student'
+      responses:
+        '201':
+          description: Student created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Student'
+
+  /students/{id}:
+    get:
+      summary: Get student by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Student details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Student'
+
+    put:
+      summary: Update student
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Student'
+      responses:
+        '200':
+          description: Student updated
+
+    delete:
+      summary: Delete student (soft delete)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Student deleted
+
+  /students/{id}/process-certificate:
+    post:
+      summary: Process certificate for student (UC-16)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Certificate processed
+
+  /students/{id}/email-certificate:
+    post:
+      summary: Email certificate to student
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Certificate emailed
+
+  /classes:
+    get:
+      summary: List all classes
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of classes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  classes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Class'
+
+    post:
+      summary: Create new class (UC-1)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Class'
+      responses:
+        '201':
+          description: Class created
+
+  /classes/{id}:
+    get:
+      summary: Get class by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Class details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Class'
+
+    put:
+      summary: Update class (UC-19)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Class'
+      responses:
+        '200':
+          description: Class updated
+
+    delete:
+      summary: Delete class
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Class deleted
+
+  /classes/{id}/enroll:
+    post:
+      summary: Enroll student in class (UC-7)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Student'
+      responses:
+        '201':
+          description: Student enrolled
+
+  /classes/{id}/qr-code:
+    get:
+      summary: Generate QR code for self-enrollment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: QR code data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  qrCode:
+                    type: string
+                  enrollmentUrl:
+                    type: string
+
+  /classes/{id}/process-all:
+    post:
+      summary: Process certificates for all students in class
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: All certificates processed
+
+  /classes/{id}/email-certificates:
+    post:
+      summary: Email certificates to all students
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Certificates emailed
+
+  /classes/{id}/record-payment:
+    post:
+      summary: Record instructor payment to admin (UC-3)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                transactionId:
+                  type: string
+                notes:
+                  type: string
+      responses:
+        '200':
+          description: Payment recorded
+
+  /instructors:
+    get:
+      summary: List all instructors
+      responses:
+        '200':
+          description: List of instructors
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  instructors:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Instructor'
+
+    post:
+      summary: Create new instructor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Instructor'
+      responses:
+        '201':
+          description: Instructor created
+
+  /instructors/{id}:
+    get:
+      summary: Get instructor by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Instructor details
+
+    put:
+      summary: Update instructor
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Instructor updated
+
+    delete:
+      summary: Delete instructor
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Instructor deleted
+
+  /locations:
+    get:
+      summary: List all locations
+      responses:
+        '200':
+          description: List of locations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  locations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Location'
+
+    post:
+      summary: Create new location
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Location'
+      responses:
+        '201':
+          description: Location created
+
+  /locations/{id}:
+    get:
+      summary: Get location by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Location details
+
+    put:
+      summary: Update location
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Location updated
+
+    delete:
+      summary: Delete location
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Location deleted
+
+  /courses:
+    get:
+      summary: List all active courses
+      responses:
+        '200':
+          description: List of courses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  courses:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Course'
+
+  /reports/income:
+    get:
+      summary: Income report by date range
+      parameters:
+        - name: startDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [json, csv]
+            default: json
+      responses:
+        '200':
+          description: Income report
+
+  /reports/students:
+    get:
+      summary: Students report by date range
+      parameters:
+        - name: startDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [json, csv]
+            default: json
+      responses:
+        '200':
+          description: Students report
+
+  /reports/students-by-class:
+    get:
+      summary: Students grouped by class
+      parameters:
+        - name: classID
+          in: query
+          schema:
+            type: integer
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [json, csv]
+            default: json
+      responses:
+        '200':
+          description: Students by class report
+
+  /reports/certificates:
+    get:
+      summary: Certificate export for state reporting
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: CSV export of certificates
+
+  /public/classes/{id}:
+    get:
+      summary: Get public class information
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Public class information
+
+  /public/classes/{id}/students:
+    post:
+      summary: Public student enrollment via QR code (UC-7)
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Student'
+      responses:
+        '201':
+          description: Student enrolled
+

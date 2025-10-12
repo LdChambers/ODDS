@@ -1,0 +1,75 @@
+Classroom Maintenance Requirements
+The following is a list of screens it may not be complete but should get you started.
+Feel free to expand, ask questions etc. It’s not a complicated system. Essentially a series of CRUD screens along with lists, search etc.
+Login Screen
+Logo Title Email Address
+Password
+Lost Password/Trouble Logging In link
+Main Dashboard
+Search (student by name, license number, certificate number) - results in Student List
+Cards to access each area (Students, Classes, Locations, Instructors, Reports)
+Class
+Class List
+Class Add
+Class Edit
+Student List
+Student Add
+Student Edit
+Process Student (Issue Certificate)
+Process All students (Issue all Certificates)
+Email Certificates (en masse)
+Student
+Student List
+Student Edit
+Student Add
+Email Certificate
+Print Certificate
+There will likely need to be a stand-alone screen for students to enter their own information but only one-off where they scan a QR Code and are allowed to do the Student Add function for a given class. Essentially identical to the Student Add above but isolated with no other functionality.
+Location
+Location List
+Location Add
+Location Edit
+Instructor
+Instructor List
+Instructor Add
+Instructor Edit
+Reports
+Income by Date Range
+Students by Date Range
+Students by Class
+Print QR Code for Class to scan and self-add
+Master Admin Requirements
+The “master admin” is a separate area where we (the administrators) can look at all content and manage the lookup tables that the end users will not have access to.
+Login Screen
+Logo Title Email Address
+Password
+Lost Password/Trouble Logging In link
+Main Dashboard
+Search (student by name, license number, certificate number) - results in Student List
+Cards to access each area (Students, Classes, Locations, Instructors, Reports)
+Account
+Account List
+Account Add
+Account Edit
+Class
+Class List
+Student List
+Student Edit
+Location
+Location List
+Location Add
+Location Edit
+Instructor
+Instructor List
+Instructor Add
+Instructor Edit
+Student
+Student List
+Student Edit
+Student Correction (special correction record with some information from student record overriding some student information - issues replacement certificate number)
+Email Certificate
+Print Certificate
+Reports
+Income by Date Range
+Students by Date Range
+Students by Class

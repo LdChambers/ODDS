@@ -1,0 +1,157 @@
+Class Management for Driving Safety
+Vision 
+
+Version 1.0 
+Revision History
+Date	Version	Description	Author
+09/26/2025	1.0	First release version	All Group Members
+			
+			
+			
+
+ 
+Table of Contents
+1. Introduction	4
+1.1 Background	4
+1.2 References	4
+2. Business Requirements	5
+2.1 Business Opportunity/Problem Statement	5
+2.2 Business Objectives	5
+2.3 Success Metrics	5
+2.4 Vision Statement	6
+2.5 Business Risks	6
+2.6 Business Assumptions and Dependencies	6
+3. Stakeholder Profiles and User Descriptions	8
+3.1 Stakeholder Profiles	8
+3.2 User Environment	9
+3.3 Alternatives and Competition	9
+4. Scope and Limitations	10
+4.1 Product Perspective	10
+4.2 Major Features / Scope	10
+4.3 Deployment Considerations	11
+5. Other Product Requirements	12
+
+
+ 
+Vision
+1.	Introduction
+1.1	Background
+Online Defensive Driving Schools LLC (ODDS) currently relies on a manual and time-intensive process to manage student records, generate course completion certificates, and facilitate payments for its classroom providers. Currently, certificates are created manually by the ODDS team, with data periodically exported into spreadsheets and uploaded to the state for reporting purposes. The payment process is also fragmented. Students pay course fees directly to the classroom provider, and ODDS  charges classroom providers a cost per student to manage certification and record-keeping (currently $5 per student). While this approach has allowed the business to operate, it requires significant ongoing effort from the client and introduces inefficiencies for both instructors and students.
+
+Over time, these inefficiencies have created several challenges. The manual generation of certificates delays delivery to students, often causing frustration. Classroom providers often lack centralized access to student and class data, making organization and coordination more challenging. Additionally, the lack of an integrated payment system places a burden on both the company and instructors. As ODDS continues to partner with multiple instructors and schools across Texas, these problems become increasingly complex and costly.
+
+The client is seeking a comprehensive solution that automates certification, centralizes class and student data, and simplifies payment processes. This decision is motivated not only by the desire to reduce time and labor but also by the opportunity to enhance the experience for both classroom providers and students.
+
+
+
+
+1.2	References
+classmanager_2025 09-19.sql, 09/19/2025, Useful Resources folder in Google Drive
+Classroom Maintenance DB.sql, 09/20/2025, Useful Resources folder in Google Drive
+Classroom Maintenance Requirements.pdf, 09/15/2025, Useful Resources folder in Google Drive
+Problem Overview, 09/21/2025, Useful Resources folder in Google Drive
+
+
+ 
+2.	Business Requirements
+2.1	Business Opportunity/Problem Statement
+The problem of manual certificate generation and lack of centralized classroom management affects ODDS, the Classroom Providers working with them, and the students of these classes. One impact of this problem is requiring a large and unnecessary time investment for the client company in generating certificates and retrieving data. Another is a lack of direction in class organization, centralization of class payment processes, and access to data for Classroom Providers. Finally, there is a delay in the time it takes for students to get their certificates after they complete a course. A successful solution would automate the certificate generation process by allowing students/providers to enter information and providers to convert said information into a certification pdf. It would also centralize all of the class, student, and instructor data allowing for easy retrieval for both the client company and classroom providers. Furthermore, it would allow students to receive their certification through email or print on the same day they complete the course. Lastly, it would provide a centralized system for receiving payment from students through a centralized system and providing payment to ODDS.
+
+2.2	Business Objectives
+BO-1: Automate all of the work required by the client for issuing certificates (Manually converting the forms to PDF)
+
+BO-2: Increase the revenue obtained through certificate generation from $5 per student to $10 per student 
+
+BO-3: Increase efficiency and ease of retrieving class, student, and instructor data by 50%
+
+2.3	Success Metrics
+SM-1: 100% of certificates will be issued automatically within one business day of course completion
+
+SM-2:  50% reduction in staff time spent on certificate processing and data entry compared to current baseline
+
+SM-3:  Increase in revenue from $5 to $10 per student with full instructor adoption of the system
+
+2.4	Vision Statement
+For classroom providers and instructors teaching driving safety courses in Texas who need an easy way to manage classes, process students, and issue certificates without delays. The Class Management for Driving Safety system is a web-based and mobile-friendly classroom management platform that lets instructors create classes, enter student details, process certificates, and handle payments in one place with real-time certificate issuance and reporting. Unlike the current manual, spreadsheet-based, and fragmented process, our product automates certificate generation, centralizes class/student/instructor data, simplifies payments, and enhances both provider and student experience.
+
+2.5	Business Risks
+RI-1: Instructors may be slow to adopt the new system (Probability: 0.5; Impact = 7)
+RI-2: Security or privacy breaches of student data could damage trust and lead to legal penalties (Probability: 0.3; Impact = 9)
+RI-3: Payment processor changes or failures could interrupt revenue flow and certificate issuance (Probability: 0.3; Impact = 8)
+RI-4: System does not save or confirm completion of courses by students (Probability: 0.5; Impact: 6)
+RI-5: Student profiles are not saved properly in the database (Probability: 0.4; Impact: 5)
+RI-6: Certificates do not generate the required fields or misprint them resulting in invalid certifications (Probability: 0.4; Impact 4)
+
+2.6	Business Assumptions and Dependencies
+AS-1: Instructors will have access to internet-connected devices (laptop, tablet, or smartphone) to use the system
+AS-2: State reporting requirements will remain consistent with current TDLR standards
+DE-1: The system will integrate with the selected payment processor (Authorize.net) and remain compliant with its API
+DE-2: Certificate templates approved by TDLR will be available in PDF format for automated merging.
+
+ 
+3.	Stakeholder Profiles and User Descriptions
+3.1	Stakeholder Profiles
+
+Stakeholder	Major value or benefit from this product	Attitudes	Major features of interest	Constraints	End user or not?
+Corporate Management (Online Defensive Driving Schools, LLC)	Reduced administrative workload; increased revenue per student	Strong support contingent on efficiency gains and ease of use for the system	Automation of certificate issuance; Reporting dashboards	Must meet regulatory compliance and data security	No
+Instructors/Classroom Providers	Ability to create classes, process students, and issue certificates on-site	Ease of use for the system, accurate data collection and payment processing.	Class creation; Student entry; Payment processing; Certificate Issuance	Training required	Yes
+Students	Faster certificate delivery; Improved record accuracy	Neutral towards the solution, their experience will be a little more streamlined, but it won’t change much for them	Ability to self-enter data; Same-day email/print certificates	Need for secure handling of personal data	Yes
+State Agencies (TDLR)	Accurate and timely reporting	Neutral towards the solution, the data they receive in the reports will be the same regardless	Reliable data export	Compliance requirements	No
+
+3.2	User Environment
+The primary users in this system are driving safety instructors in Texas. A typical class cycle is a single-day session that lasts several hours and concludes with a meal. In the current model, instructors send student information to the provider, who then processes certificates and driving records—often leading to delays, especially when classes are held on weekends.
+With the new system, instructors will manage the entire workflow themselves: entering student data, retrieving driving records, and issuing certificates directly. This shift significantly reduces provider workload while giving instructors greater autonomy and control. The number of people involved in each cycle decreases since provider staff no longer need to manually process submissions. The system must be accessible on mobile and desktop platforms, as instructors often work in transient or non-office environments. Integration with TDLR’s approved certificate management processes is essential, and the solution should be compatible with common tools like email and secure online portals to distribute certificates efficiently.
+3.3	Alternatives and Competition
+Currently, instructors have a few alternatives when it comes to offering driving safety classes. The first is maintaining the status quo, where they send student information to the provider, who then handles certificates and driving records. While this ensures compliance and takes the administrative burden off the instructors, it often leads to delays in certificate delivery, especially for weekend classes, and creates a heavy workload for the provider. Another option is turning to other licensed providers who may offer different fee structures or slightly faster processing. However, these alternatives usually give instructors less flexibility and still tie them to the provider’s processing timelines. Finally, instructors could attempt to create their own homegrown solutions, but these are not viable since TDLR regulations require certificates to come from licensed providers, making such efforts noncompliant and legally invalid. Compared to these alternatives, the new system stands out by giving instructors direct control to manage records and issue certificates immediately, while also reducing provider workload and increasing revenue per student.
+
+
+
+
+ 
+4.	Scope and Limitations
+4.1	Product Perspective
+ 
+
+4.2	Major Features / Scope
+User Login and Authentication:
+●	FE-1: Secure login for users (administrators, instructors, students) using email and password.
+●	FE-2: Forgotten password or troubleshooting login functionality.
+●	FE-3: Role-based access control where users with global permissions can view all schools, while other users only see their assigned school’s information.
+Dashboard:
+●	FE-4: Centralized dashboard providing access to Students, Classes, Locations, Instructors, and Reports.
+●	FE-5: Search functionality to find students by name, license number, or certificate number.
+Student Management:
+●	FE-6: Add, view, and edit student records.
+●	FE-7: Process and issue certificates to individual students or all students in a class.
+●	FE-8: Email and print certificates in bulk.
+Class Management:
+●	FE-9: List, add, and edit classes with details like course, instructor, and location.
+●	FE-10: Manage student enrollment in classes, including certificate issuance for class participants.
+Instructor Management:
+●	FE-11: Add, view, and edit instructor profiles.
+Location Management:
+●	FE-12: Manage location data, including the ability to add, edit, and list available locations for classes.
+Reporting:
+●	FE-13: Generate reports such as income by date range, students by class, and students by date range.
+●	FE-14: Print QR codes for class self-enrollment via student scan.
+Master Admin Features:
+●	FE-15: Admin panel for managing all system aspects, such as users, classes, locations, students, and instructors.
+●	FE-16: Ability to manage lookup tables (e.g., states, counties, courses) for configuration purposes.
+
+4.3	Deployment Considerations
+
+User Access and Permissions:
+●	Users must be able to access the system based on their assigned roles (admin, instructor, student). Admins have global access, while instructors and students have limited access.
+●	The login system should be capable of handling different time zones and locations, especially if the system is used in multiple geographical areas.
+Infrastructure Requirements:
+●	The system should be deployed on a server with sufficient capacity to handle expected traffic and data storage needs. A MySQL database will be used to store data related to students, classes, certificates, and other entities.
+●	The web-based system should be accessible via both corporate intranets and external internet connections, ensuring authorized personnel can access it from various locations.
+Data Migration and System Integration:
+●	If necessary, existing data from previous systems should be migrated to the new system. This includes importing student records, class schedules, and certificate data into the MySQL database.
+●	Integration with other systems may be necessary for tasks such as email notifications and certificate printing.
+Training and Support:
+●	Training will be required for administrators, instructors, and students on how to use the system, particularly for functions like issuing certificates and managing classes.
+●	Support should be available for troubleshooting during the deployment phase and ongoing usage, especially if there are infrastructure changes or upgrades.
+Security and Maintenance:
+●	The system should be deployed with proper security measures in place to protect sensitive data, including student and instructor information.
+●	Regular maintenance should be scheduled to ensure system stability, including updates to database structures and backend services as necessary.
