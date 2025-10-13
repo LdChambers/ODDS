@@ -5,7 +5,6 @@ module.exports = function (ctx) {
   return {
     // app boot file (/src/boot)
     boot: [
-      'pinia',
       'axios',
       'auth'
     ],
