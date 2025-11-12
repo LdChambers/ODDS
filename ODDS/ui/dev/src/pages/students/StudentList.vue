@@ -8,51 +8,42 @@
     <!-- Search Filters (UC-2) -->
     <q-card class="q-mb-md">
       <q-card-section>
-        <div class="text-h6 q-mb-md">Search & Filter</div>
+        <div class="text-h6 q-mb-md">Search Students</div>
         <div class="row q-col-gutter-md">
-          <div class="col-12 col-md-3">
-            <q-input v-model="filters.firstName" outlined dense label="First Name" />
+          <div class="col-12 col-md-4">
+            <q-input 
+              v-model="filters.firstName" 
+              outlined 
+              dense 
+              label="First Name"
+              clearable
+              @update:model-value="onFilterChange"
+            />
           </div>
-          <div class="col-12 col-md-3">
-            <q-input v-model="filters.lastName" outlined dense label="Last Name" />
+          <div class="col-12 col-md-4">
+            <q-input 
+              v-model="filters.lastName" 
+              outlined 
+              dense 
+              label="Last Name"
+              clearable
+              @update:model-value="onFilterChange"
+            />
           </div>
-          <div class="col-12 col-md-3">
-            <q-input v-model="filters.email" outlined dense label="Email" />
-          </div>
-          <div class="col-12 col-md-3">
-            <q-input v-model="filters.phone" outlined dense label="Phone" />
-          </div>
-          <div class="col-12 col-md-3">
-            <q-input v-model="filters.licenseNumber" outlined dense label="License Number" />
-          </div>
-          <div class="col-12 col-md-3">
-            <q-input v-model="filters.certificateNumber" outlined dense label="Certificate Number" />
-          </div>
-          <div class="col-12 col-md-3">
-            <q-input v-model="filters.ssnLastFour" outlined dense label="SSN Last 4" maxlength="4" />
-          </div>
-          <div class="col-12 col-md-3">
-            <q-select
-              v-model="filters.isPaid"
-              outlined
-              dense
-              label="Payment Status"
-              :options="[
-                { label: 'All', value: null },
-                { label: 'Paid', value: 'true' },
-                { label: 'Unpaid', value: 'false' }
-              ]"
-              option-label="label"
-              option-value="value"
-              emit-value
-              map-options
+          <div class="col-12 col-md-4">
+            <q-input 
+              v-model="filters.phone" 
+              outlined 
+              dense 
+              label="Phone Number"
+              clearable
+              @update:model-value="onFilterChange"
             />
           </div>
         </div>
         <div class="row q-mt-md">
           <q-space />
-          <q-btn flat label="Clear" @click="clearFilters" class="q-mr-sm" />
-          <q-btn color="primary" label="Search" @click="loadStudents" />
+          <q-btn flat label="Clear All" @click="clearFilters" icon="clear" />
         </div>
       </q-card-section>
     </q-card>
@@ -70,6 +61,19 @@
       <template v-slot:body-cell-name="props">
         <q-td :props="props">
           {{ props.row.firstName }} {{ props.row.lastName }}
+        </q-td>
+      </template>
+
+      <template v-slot:body-cell-class="props">
+        <q-td :props="props">
+          <div v-if="props.row.class">
+            <div class="text-weight-medium">{{ props.row.class.course?.name }}</div>
+            <div class="text-caption text-grey-7">
+              {{ formatDate(props.row.class.completionDate) }}
+              <span v-if="props.row.class.location"> - {{ props.row.class.location.name }}</span>
+            </div>
+          </div>
+          <span v-else class="text-grey-6">No class assigned</span>
         </q-td>
       </template>
 
@@ -126,7 +130,7 @@
 <script>
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useQuasar } from 'quasar'
+import { useQuasar, date } from 'quasar'
 import { studentsAPI } from 'src/services/api'
 
 export default {
@@ -150,16 +154,14 @@ export default {
     const filters = ref({
       firstName: '',
       lastName: '',
-      email: '',
-      phone: '',
-      licenseNumber: '',
-      certificateNumber: '',
-      ssnLastFour: '',
-      isPaid: null
+      phone: ''
     })
+
+    let searchTimeout = null
 
     const columns = [
       { name: 'name', label: 'Name', align: 'left', field: 'lastName', sortable: true },
+      { name: 'class', label: 'Class', align: 'left', field: 'class' },
       { name: 'email', label: 'Email', align: 'left', field: 'email', sortable: true },
       { name: 'phoneNumber', label: 'Phone', align: 'left', field: 'phoneNumber' },
       { name: 'licenseNumber', label: 'License #', align: 'left', field: 'licenseNumber' },
@@ -209,17 +211,26 @@ export default {
       loadStudents(props)
     }
 
+    const onFilterChange = () => {
+      // Debounce search - wait 500ms after user stops typing
+      if (searchTimeout) {
+        clearTimeout(searchTimeout)
+      }
+      
+      searchTimeout = setTimeout(() => {
+        // Reset to page 1 when filters change
+        pagination.value.page = 1
+        loadStudents()
+      }, 500)
+    }
+
     const clearFilters = () => {
       filters.value = {
         firstName: '',
         lastName: '',
-        email: '',
-        phone: '',
-        licenseNumber: '',
-        certificateNumber: '',
-        ssnLastFour: '',
-        isPaid: null
+        phone: ''
       }
+      pagination.value.page = 1
       loadStudents()
     }
 
@@ -264,16 +275,21 @@ export default {
       }
     }
 
+    const formatDate = (dateStr) => {
+      if (!dateStr) return 'N/A'
+      return date.formatDate(dateStr, 'MMM DD, YYYY')
+    }
+
     onMounted(() => {
       // Check for search query from dashboard
       if (route.query.search) {
         const search = route.query.search
         // Try to determine what field to search
         if (search.match(/^\d+$/)) {
-          filters.value.certificateNumber = search
-        } else if (search.includes('@')) {
-          filters.value.email = search
+          // If it's digits, search by phone
+          filters.value.phone = search
         } else {
+          // Otherwise search by last name
           filters.value.lastName = search
         }
       }
@@ -288,10 +304,12 @@ export default {
       columns,
       loadStudents,
       onRequest,
+      onFilterChange,
       clearFilters,
       editStudent,
       processCertificate,
-      emailCertificate
+      emailCertificate,
+      formatDate
     }
   }
 }

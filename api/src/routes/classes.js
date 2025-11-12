@@ -111,6 +111,45 @@ router.post('/', async (req, res) => {
       completionDate: req.body.completionDate ? new Date(req.body.completionDate) : null
     };
 
+    console.log('Attempting to create class with data:', data);
+
+    // Validate required foreign keys exist
+    if (data.fk_schoolID) {
+      const schoolExists = await prisma.school.findFirst({
+        where: { schoolID: parseInt(data.fk_schoolID), deletedAt: null }
+      });
+      if (!schoolExists) {
+        return res.status(400).json({ error: 'Invalid school ID' });
+      }
+    }
+
+    if (data.fk_locationID) {
+      const locationExists = await prisma.location.findFirst({
+        where: { locationID: parseInt(data.fk_locationID), deletedAt: null }
+      });
+      if (!locationExists) {
+        return res.status(400).json({ error: 'Invalid location ID' });
+      }
+    }
+
+    if (data.fk_courseID) {
+      const courseExists = await prisma.course.findFirst({
+        where: { courseID: parseInt(data.fk_courseID), deletedAt: null }
+      });
+      if (!courseExists) {
+        return res.status(400).json({ error: 'Invalid course ID' });
+      }
+    }
+
+    if (data.fk_InstructorID) {
+      const instructorExists = await prisma.instructor.findFirst({
+        where: { instructorID: parseInt(data.fk_InstructorID), deletedAt: null }
+      });
+      if (!instructorExists) {
+        return res.status(400).json({ error: 'Invalid instructor ID' });
+      }
+    }
+
     const classData = await prisma.class.create({
       data,
       include: {
@@ -124,7 +163,14 @@ router.post('/', async (req, res) => {
     res.status(201).json(classData);
   } catch (error) {
     console.error('Error creating class:', error);
-    res.status(500).json({ error: 'Failed to create class' });
+    console.error('Error details:', error.message);
+    if (error.code) {
+      console.error('Error code:', error.code);
+    }
+    res.status(500).json({ 
+      error: 'Failed to create class',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 

@@ -76,6 +76,7 @@ export const reportsAPI = {
 
 // Public API (no auth)
 export const publicAPI = {
+  getStates: () => api.get('/public/states'),
   getClass: (id) => api.get(`/public/classes/${id}`),
   enrollStudent: (id, data) => api.post(`/public/classes/${id}/students`, data)
 }

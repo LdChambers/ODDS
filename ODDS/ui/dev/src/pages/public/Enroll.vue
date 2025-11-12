@@ -75,6 +75,22 @@
               />
             </div>
             <div class="col-6">
+              <q-select
+                v-model="form.fk_stateID"
+                outlined
+                label="State *"
+                :options="states"
+                option-label="name"
+                option-value="stateID"
+                emit-value
+                map-options
+                :rules="[val => !!val || 'Required']"
+              />
+            </div>
+          </div>
+
+          <div class="row q-col-gutter-md">
+            <div class="col-6">
               <q-input
                 v-model="form.zipCode"
                 outlined
@@ -82,12 +98,25 @@
                 :rules="[val => !!val || 'Required']"
               />
             </div>
+            <div class="col-6">
+              <q-input
+                v-model="form.licenseNumber"
+                outlined
+                label="License Number *"
+                :rules="[val => !!val || 'Required']"
+              />
+            </div>
           </div>
 
-          <q-input
-            v-model="form.licenseNumber"
+          <q-select
+            v-model="form.fk_licenseStateID"
             outlined
-            label="License Number *"
+            label="License State *"
+            :options="states"
+            option-label="name"
+            option-value="stateID"
+            emit-value
+            map-options
             :rules="[val => !!val || 'Required']"
           />
 
@@ -136,6 +165,7 @@ export default {
     const classInfo = ref(null)
     const loading = ref(false)
     const submitted = ref(false)
+    const states = ref([])
 
     const form = ref({
       firstName: '',
@@ -148,8 +178,8 @@ export default {
       zipCode: '',
       licenseNumber: '',
       birthDate: '',
-      fk_stateID: 1,
-      fk_licenseStateID: 1
+      fk_stateID: null,
+      fk_licenseStateID: null
     })
 
     const loadClassInfo = async () => {
@@ -161,6 +191,21 @@ export default {
           type: 'negative',
           message: 'Failed to load class information'
         })
+      }
+    }
+
+    const loadStates = async () => {
+      try {
+        const response = await publicAPI.getStates()
+        states.value = response.data.states
+        
+        // Set default state to first one if available
+        if (states.value.length > 0) {
+          form.value.fk_stateID = states.value[0].stateID
+          form.value.fk_licenseStateID = states.value[0].stateID
+        }
+      } catch (error) {
+        console.error('Failed to load states:', error)
       }
     }
 
@@ -193,6 +238,7 @@ export default {
 
     onMounted(() => {
       loadClassInfo()
+      loadStates()
     })
 
     return {
@@ -200,6 +246,7 @@ export default {
       form,
       loading,
       submitted,
+      states,
       formatDate,
       onSubmit
     }

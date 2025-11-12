@@ -20,30 +20,65 @@ async function main() {
   await prisma.deliveryMethod.deleteMany();
   await prisma.courseProvider.deleteMany();
 
-  // Create States
-  const states = await Promise.all([
-    prisma.state.create({
-      data: {
-        name: 'Texas',
-        abbreviation: 'TX',
-        priority: 1
-      }
-    }),
-    prisma.state.create({
-      data: {
-        name: 'Oklahoma',
-        abbreviation: 'OK',
-        priority: 2
-      }
-    }),
-    prisma.state.create({
-      data: {
-        name: 'Louisiana',
-        abbreviation: 'LA',
-        priority: 3
-      }
-    })
-  ]);
+  // Create States (All 50 US States)
+  const statesList = [
+    { name: 'Texas', abbreviation: 'TX', priority: 1 },
+    { name: 'Alabama', abbreviation: 'AL', priority: 2 },
+    { name: 'Alaska', abbreviation: 'AK', priority: 3 },
+    { name: 'Arizona', abbreviation: 'AZ', priority: 4 },
+    { name: 'Arkansas', abbreviation: 'AR', priority: 5 },
+    { name: 'California', abbreviation: 'CA', priority: 6 },
+    { name: 'Colorado', abbreviation: 'CO', priority: 7 },
+    { name: 'Connecticut', abbreviation: 'CT', priority: 8 },
+    { name: 'Delaware', abbreviation: 'DE', priority: 9 },
+    { name: 'Florida', abbreviation: 'FL', priority: 10 },
+    { name: 'Georgia', abbreviation: 'GA', priority: 11 },
+    { name: 'Hawaii', abbreviation: 'HI', priority: 12 },
+    { name: 'Idaho', abbreviation: 'ID', priority: 13 },
+    { name: 'Illinois', abbreviation: 'IL', priority: 14 },
+    { name: 'Indiana', abbreviation: 'IN', priority: 15 },
+    { name: 'Iowa', abbreviation: 'IA', priority: 16 },
+    { name: 'Kansas', abbreviation: 'KS', priority: 17 },
+    { name: 'Kentucky', abbreviation: 'KY', priority: 18 },
+    { name: 'Louisiana', abbreviation: 'LA', priority: 19 },
+    { name: 'Maine', abbreviation: 'ME', priority: 20 },
+    { name: 'Maryland', abbreviation: 'MD', priority: 21 },
+    { name: 'Massachusetts', abbreviation: 'MA', priority: 22 },
+    { name: 'Michigan', abbreviation: 'MI', priority: 23 },
+    { name: 'Minnesota', abbreviation: 'MN', priority: 24 },
+    { name: 'Mississippi', abbreviation: 'MS', priority: 25 },
+    { name: 'Missouri', abbreviation: 'MO', priority: 26 },
+    { name: 'Montana', abbreviation: 'MT', priority: 27 },
+    { name: 'Nebraska', abbreviation: 'NE', priority: 28 },
+    { name: 'Nevada', abbreviation: 'NV', priority: 29 },
+    { name: 'New Hampshire', abbreviation: 'NH', priority: 30 },
+    { name: 'New Jersey', abbreviation: 'NJ', priority: 31 },
+    { name: 'New Mexico', abbreviation: 'NM', priority: 32 },
+    { name: 'New York', abbreviation: 'NY', priority: 33 },
+    { name: 'North Carolina', abbreviation: 'NC', priority: 34 },
+    { name: 'North Dakota', abbreviation: 'ND', priority: 35 },
+    { name: 'Ohio', abbreviation: 'OH', priority: 36 },
+    { name: 'Oklahoma', abbreviation: 'OK', priority: 37 },
+    { name: 'Oregon', abbreviation: 'OR', priority: 38 },
+    { name: 'Pennsylvania', abbreviation: 'PA', priority: 39 },
+    { name: 'Rhode Island', abbreviation: 'RI', priority: 40 },
+    { name: 'South Carolina', abbreviation: 'SC', priority: 41 },
+    { name: 'South Dakota', abbreviation: 'SD', priority: 42 },
+    { name: 'Tennessee', abbreviation: 'TN', priority: 43 },
+    { name: 'Utah', abbreviation: 'UT', priority: 44 },
+    { name: 'Vermont', abbreviation: 'VT', priority: 45 },
+    { name: 'Virginia', abbreviation: 'VA', priority: 46 },
+    { name: 'Washington', abbreviation: 'WA', priority: 47 },
+    { name: 'West Virginia', abbreviation: 'WV', priority: 48 },
+    { name: 'Wisconsin', abbreviation: 'WI', priority: 49 },
+    { name: 'Wyoming', abbreviation: 'WY', priority: 50 }
+  ];
+
+  const states = [];
+  for (const stateData of statesList) {
+    const state = await prisma.state.create({ data: stateData });
+    states.push(state);
+  }
   console.log(`✓ Created ${states.length} states`);
 
   // Create Counties
