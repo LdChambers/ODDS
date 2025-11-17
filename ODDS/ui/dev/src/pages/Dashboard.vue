@@ -14,7 +14,7 @@
         <q-input
           v-model="searchQuery"
           outlined
-          placeholder="Search by name, license number, or certificate number..."
+          placeholder="Search by last name or phone number..."
           @keyup.enter="performSearch"
         >
           <template v-slot:prepend>
