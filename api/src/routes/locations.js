@@ -91,6 +91,10 @@ router.post('/', async (req, res) => {
       fk_schoolID: req.user.hasGlobalPermissions ? req.body.fk_schoolID : req.user.fk_schoolID
     };
 
+    // Remove number field if provided - it will be auto-generated
+    delete data.number;
+
+    // Create location first to get the auto-incremented ID
     const location = await prisma.location.create({
       data,
       include: {
@@ -98,7 +102,19 @@ router.post('/', async (req, res) => {
       }
     });
 
-    res.status(201).json(location);
+    // Auto-generate location number based on locationID (padded to 3 digits)
+    const generatedNumber = String(location.locationID).padStart(3, '0');
+    
+    // Update location with generated number
+    const updatedLocation = await prisma.location.update({
+      where: { locationID: location.locationID },
+      data: { number: generatedNumber },
+      include: {
+        school: true
+      }
+    });
+
+    res.status(201).json(updatedLocation);
   } catch (error) {
     console.error('Error creating location:', error);
     res.status(500).json({ error: 'Failed to create location' });
@@ -123,6 +139,7 @@ router.put('/:id', async (req, res) => {
     const data = { ...req.body };
     delete data.locationID;
     delete data.createdAt;
+    delete data.number; // Location number is auto-generated, cannot be manually changed
 
     const location = await prisma.location.update({
       where: { locationID: parseInt(req.params.id) },

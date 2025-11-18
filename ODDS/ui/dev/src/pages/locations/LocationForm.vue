@@ -8,24 +8,12 @@
     <q-card>
       <q-card-section>
         <q-form @submit="onSubmit" class="q-gutter-md">
-          <div class="row q-col-gutter-md">
-            <div class="col-12 col-md-9">
-              <q-input
-                v-model="form.name"
-                outlined
-                label="Location Name *"
-                :rules="[val => !!val || 'Required']"
-              />
-            </div>
-            <div class="col-12 col-md-3">
-              <q-input
-                v-model="form.number"
-                outlined
-                label="Number"
-                hint="Location code"
-              />
-            </div>
-          </div>
+          <q-input
+            v-model="form.name"
+            outlined
+            label="Location Name *"
+            :rules="[val => !!val || 'Required']"
+          />
 
           <q-input
             v-model="form.addressLine1"
@@ -50,12 +38,17 @@
               />
             </div>
             <div class="col-12 col-md-3">
-              <q-input
-                v-model.number="form.fk_stateID"
+              <q-select
+                v-model="form.fk_stateID"
                 outlined
-                type="number"
-                label="State ID *"
+                label="State *"
+                :options="states"
+                option-label="name"
+                option-value="stateID"
+                emit-value
+                map-options
                 :rules="[val => !!val || 'Required']"
+                :loading="loadingStates"
               />
             </div>
             <div class="col-12 col-md-3">
@@ -87,7 +80,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useQuasar } from 'quasar'
-import { locationsAPI } from 'src/services/api'
+import { locationsAPI, publicAPI } from 'src/services/api'
 import { useAuthStore } from 'src/stores/auth'
 
 export default {
@@ -100,18 +93,36 @@ export default {
     const authStore = useAuthStore()
 
     const loading = ref(false)
+    const loadingStates = ref(false)
     const isEdit = computed(() => !!route.params.id)
+    const states = ref([])
 
     const form = ref({
       name: '',
-      number: '000',
       addressLine1: '',
       addressLine2: '',
       city: '',
-      fk_stateID: 1,
+      fk_stateID: null,
       zipCode: '',
       fk_schoolID: authStore.userSchoolId
     })
+
+    const loadStates = async () => {
+      loadingStates.value = true
+      try {
+        const response = await publicAPI.getStates()
+        states.value = response.data.states
+        
+        // Set default state if none selected
+        if (!form.value.fk_stateID && states.value.length > 0) {
+          form.value.fk_stateID = states.value[0].stateID
+        }
+      } catch (error) {
+        console.error('Failed to load states:', error)
+      } finally {
+        loadingStates.value = false
+      }
+    }
 
     const loadLocation = async () => {
       if (!isEdit.value) return
@@ -168,13 +179,16 @@ export default {
     }
 
     onMounted(() => {
+      loadStates()
       loadLocation()
     })
 
     return {
       form,
       loading,
+      loadingStates,
       isEdit,
+      states,
       onSubmit
     }
   }

@@ -84,12 +84,17 @@
               />
             </div>
             <div class="col-12 col-md-3">
-              <q-input
+              <q-select
                 v-model="form.fk_stateID"
                 outlined
-                type="number"
-                label="State ID *"
+                label="State *"
+                :options="states"
+                option-label="name"
+                option-value="stateID"
+                emit-value
+                map-options
                 :rules="[val => !!val || 'Required']"
+                :loading="loadingStates"
               />
             </div>
             <div class="col-12 col-md-3">
@@ -112,12 +117,17 @@
               />
             </div>
             <div class="col-12 col-md-3">
-              <q-input
+              <q-select
                 v-model="form.fk_licenseStateID"
                 outlined
-                type="number"
-                label="License State ID *"
+                label="License State *"
+                :options="states"
+                option-label="name"
+                option-value="stateID"
+                emit-value
+                map-options
                 :rules="[val => !!val || 'Required']"
+                :loading="loadingStates"
               />
             </div>
             <div class="col-12 col-md-3">
@@ -141,13 +151,27 @@
               />
             </div>
             <div class="col-12 col-md-4">
-              <q-input
+              <q-select
                 v-model="form.fk_classID"
                 outlined
-                type="number"
-                label="Class ID *"
+                label="Class *"
+                :options="classes"
+                :option-label="opt => `${opt.course?.name || 'Class'} - ${formatDate(opt.completionDate)}`"
+                option-value="classID"
+                emit-value
+                map-options
                 :rules="[val => !!val || 'Required']"
-              />
+                :loading="loadingClasses"
+              >
+                <template v-slot:option="scope">
+                  <q-item v-bind="scope.itemProps">
+                    <q-item-section>
+                      <q-item-label>{{ scope.opt.course?.name || 'Class' }}</q-item-label>
+                      <q-item-label caption>{{ formatDate(scope.opt.completionDate) }} - {{ scope.opt.location?.name }}</q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
             </div>
             <div class="col-12 col-md-4">
               <q-checkbox v-model="isPaid" label="Payment Received" />
@@ -184,8 +208,8 @@
 <script>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useQuasar } from 'quasar'
-import { studentsAPI } from 'src/services/api'
+import { useQuasar, date } from 'quasar'
+import { studentsAPI, publicAPI, classesAPI } from 'src/services/api'
 import { useAuthStore } from 'src/stores/auth'
 
 export default {
@@ -198,8 +222,12 @@ export default {
     const authStore = useAuthStore()
 
     const loading = ref(false)
+    const loadingStates = ref(false)
+    const loadingClasses = ref(false)
     const isEdit = computed(() => !!route.params.id)
     const isPaid = ref(false)
+    const states = ref([])
+    const classes = ref([])
 
     const form = ref({
       firstName: '',
@@ -283,7 +311,42 @@ export default {
       }
     }
 
+    const loadStates = async () => {
+      loadingStates.value = true
+      try {
+        const response = await publicAPI.getStates()
+        states.value = response.data.states
+        if (states.value.length > 0 && !form.value.fk_stateID) {
+          form.value.fk_stateID = states.value[0].stateID
+          form.value.fk_licenseStateID = states.value[0].stateID
+        }
+      } catch (error) {
+        console.error('Failed to load states:', error)
+      } finally {
+        loadingStates.value = false
+      }
+    }
+
+    const loadClasses = async () => {
+      loadingClasses.value = true
+      try {
+        const response = await classesAPI.list({ limit: 1000 })
+        classes.value = response.data.classes
+      } catch (error) {
+        console.error('Failed to load classes:', error)
+      } finally {
+        loadingClasses.value = false
+      }
+    }
+
+    const formatDate = (dateStr) => {
+      if (!dateStr) return 'N/A'
+      return date.formatDate(dateStr, 'MMM DD, YYYY')
+    }
+
     onMounted(() => {
+      loadStates()
+      loadClasses()
       loadStudent()
     })
 
@@ -291,7 +354,12 @@ export default {
       form,
       isPaid,
       loading,
+      loadingStates,
+      loadingClasses,
       isEdit,
+      states,
+      classes,
+      formatDate,
       onSubmit
     }
   }

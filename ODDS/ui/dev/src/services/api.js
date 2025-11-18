@@ -66,6 +66,15 @@ export const coursesAPI = {
   get: (id) => api.get(`/courses/${id}`)
 }
 
+// Schools API
+export const schoolsAPI = {
+  list: (params) => api.get(`/schools?${buildQuery(params)}`),
+  get: (id) => api.get(`/schools/${id}`),
+  create: (data) => api.post('/schools', data),
+  update: (id, data) => api.put(`/schools/${id}`, data),
+  delete: (id) => api.delete(`/schools/${id}`)
+}
+
 // Reports API
 export const reportsAPI = {
   income: (params) => api.get(`/reports/income?${buildQuery(params)}`),

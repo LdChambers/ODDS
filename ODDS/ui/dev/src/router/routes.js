@@ -45,6 +45,11 @@ const routes = [
       { path: 'locations/add', name: 'location-add', component: () => import('pages/locations/LocationForm.vue') },
       { path: 'locations/:id/edit', name: 'location-edit', component: () => import('pages/locations/LocationForm.vue') },
       
+      // Schools
+      { path: 'schools', name: 'schools', component: () => import('pages/schools/SchoolList.vue') },
+      { path: 'schools/add', name: 'school-add', component: () => import('pages/schools/SchoolForm.vue'), meta: { requiresGlobalPermissions: true } },
+      { path: 'schools/:id/edit', name: 'school-edit', component: () => import('pages/schools/SchoolForm.vue'), meta: { requiresGlobalPermissions: true } },
+      
       // Reports
       { path: 'reports', name: 'reports', component: () => import('pages/reports/Reports.vue') }
     ]

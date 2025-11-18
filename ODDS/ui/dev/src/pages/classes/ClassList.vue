@@ -77,8 +77,7 @@ export default {
     })
 
     const columns = [
-      { name: 'classID', label: 'ID', align: 'left', field: 'classID', sortable: true },
-      { name: 'course', label: 'Course', align: 'left', field: row => row.course?.name },
+      { name: 'school', label: 'School', align: 'left', field: row => row.school?.name },
       { name: 'location', label: 'Location', align: 'left', field: row => row.location?.name },
       { name: 'instructor', label: 'Instructor', align: 'left', field: row => row.instructor ? `${row.instructor.firstName} ${row.instructor.lastName}` : 'N/A' },
       { name: 'completionDate', label: 'Date', align: 'left', field: 'completionDate', sortable: true },

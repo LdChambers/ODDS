@@ -87,6 +87,15 @@
           </q-item-section>
         </q-item>
 
+        <q-item clickable :to="{ name: 'schools' }">
+          <q-item-section avatar>
+            <q-icon name="business" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>Schools</q-item-label>
+          </q-item-section>
+        </q-item>
+
         <q-item clickable :to="{ name: 'reports' }">
           <q-item-section avatar>
             <q-icon name="assessment" />

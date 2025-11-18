@@ -271,6 +271,7 @@ async function main() {
   const instructors = await Promise.all([
     prisma.instructor.create({
       data: {
+        fk_schoolID: schools[0].schoolID,
         firstName: 'Michael',
         lastName: 'Johnson',
         addressLine1: '111 Instructor Ave',
@@ -284,6 +285,7 @@ async function main() {
     }),
     prisma.instructor.create({
       data: {
+        fk_schoolID: schools[1].schoolID,
         firstName: 'Sarah',
         lastName: 'Williams',
         addressLine1: '222 Teaching Ln',
@@ -297,6 +299,7 @@ async function main() {
     }),
     prisma.instructor.create({
       data: {
+        fk_schoolID: schools[0].schoolID,
         firstName: 'Robert',
         lastName: 'Brown',
         addressLine1: '333 Education St',
@@ -310,43 +313,45 @@ async function main() {
   ]);
   console.log(`✓ Created ${instructors.length} instructors`);
 
-  // Create Locations
-  const locations = await Promise.all([
-    prisma.location.create({
-      data: {
-        fk_schoolID: schools[0].schoolID,
-        number: '001',
-        name: "Joe's Pizza - Hulen Street",
-        addressLine1: '5678 Hulen Street',
-        city: 'Fort Worth',
-        fk_stateID: states[0].stateID,
-        zipCode: '76132'
-      }
-    }),
-    prisma.location.create({
-      data: {
-        fk_schoolID: schools[0].schoolID,
-        number: '002',
-        name: 'Community Center West',
-        addressLine1: '1000 West 7th Street',
-        city: 'Fort Worth',
-        fk_stateID: states[0].stateID,
-        zipCode: '76102'
-      }
-    }),
-    prisma.location.create({
-      data: {
-        fk_schoolID: schools[1].schoolID,
-        number: '001',
-        name: 'Dallas Training Facility',
-        addressLine1: '2500 Main Street',
-        city: 'Dallas',
-        fk_stateID: states[0].stateID,
-        zipCode: '75201'
-      }
-    })
-  ]);
-  console.log(`✓ Created ${locations.length} locations`);
+  // Create Locations (numbers will be auto-generated based on locationID)
+  const locationData = [
+    {
+      fk_schoolID: schools[0].schoolID,
+      name: "Joe's Pizza - Hulen Street",
+      addressLine1: '5678 Hulen Street',
+      city: 'Fort Worth',
+      fk_stateID: states[0].stateID,
+      zipCode: '76132'
+    },
+    {
+      fk_schoolID: schools[0].schoolID,
+      name: 'Community Center West',
+      addressLine1: '1000 West 7th Street',
+      city: 'Fort Worth',
+      fk_stateID: states[0].stateID,
+      zipCode: '76102'
+    },
+    {
+      fk_schoolID: schools[1].schoolID,
+      name: 'Dallas Training Facility',
+      addressLine1: '2500 Main Street',
+      city: 'Dallas',
+      fk_stateID: states[0].stateID,
+      zipCode: '75201'
+    }
+  ];
+
+  const locations = [];
+  for (const data of locationData) {
+    const location = await prisma.location.create({ data });
+    // Auto-generate location number based on locationID
+    const updatedLocation = await prisma.location.update({
+      where: { locationID: location.locationID },
+      data: { number: String(location.locationID).padStart(3, '0') }
+    });
+    locations.push(updatedLocation);
+  }
+  console.log(`✓ Created ${locations.length} locations with auto-generated numbers`);
 
   // Create Classes
   const classes = await Promise.all([

@@ -95,13 +95,27 @@
           </q-card-section>
           <q-card-section>
             <q-form @submit="generateClassReport" class="q-gutter-md">
-              <q-input
-                v-model.number="classFilters.classID"
+              <q-select
+                v-model="classFilters.classID"
                 outlined
-                type="number"
-                label="Class ID (optional)"
-                hint="Leave empty for all classes"
-              />
+                label="Class (optional - leave empty for all)"
+                :options="availableClasses"
+                :option-label="opt => opt ? `${opt.course?.name || 'Class'} - ${formatDate(opt.completionDate)}` : 'All Classes'"
+                option-value="classID"
+                emit-value
+                map-options
+                clearable
+                :loading="loadingClasses"
+              >
+                <template v-slot:option="scope">
+                  <q-item v-bind="scope.itemProps">
+                    <q-item-section>
+                      <q-item-label>{{ scope.opt.course?.name || 'Class' }}</q-item-label>
+                      <q-item-label caption>{{ formatDate(scope.opt.completionDate) }} - {{ scope.opt.location?.name }}</q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
               <div class="row q-gutter-sm">
                 <q-btn
                   type="submit"
@@ -183,9 +197,9 @@
 </template>
 
 <script>
-import { ref } from 'vue'
-import { useQuasar } from 'quasar'
-import { reportsAPI, downloadCSV } from 'src/services/api'
+import { ref, onMounted } from 'vue'
+import { useQuasar, date } from 'quasar'
+import { reportsAPI, downloadCSV, classesAPI } from 'src/services/api'
 
 export default {
   name: 'Reports',
@@ -217,6 +231,26 @@ export default {
       endDate: ''
     })
 
+    const availableClasses = ref([])
+    const loadingClasses = ref(false)
+
+    const formatDate = (dateStr) => {
+      if (!dateStr) return 'N/A'
+      return date.formatDate(dateStr, 'MMM DD, YYYY')
+    }
+
+    const loadClasses = async () => {
+      loadingClasses.value = true
+      try {
+        const response = await classesAPI.list({ limit: 1000 })
+        availableClasses.value = response.data.classes
+      } catch (error) {
+        console.error('Failed to load classes:', error)
+      } finally {
+        loadingClasses.value = false
+      }
+    }
+
     const generateIncomeReport = async () => {
       try {
         const response = await reportsAPI.income({
@@ -227,7 +261,6 @@ export default {
         reportData.value = response.data
         currentReportTitle.value = 'Income Report'
         reportColumns.value = [
-          { name: 'classID', label: 'Class ID', field: 'classID', align: 'left' },
           { name: 'schoolName', label: 'School', field: 'schoolName', align: 'left' },
           { name: 'courseName', label: 'Course', field: 'courseName', align: 'left' },
           { name: 'completionDate', label: 'Date', field: 'completionDate', align: 'left' },
@@ -272,7 +305,6 @@ export default {
         reportData.value = response.data
         currentReportTitle.value = 'Students Report'
         reportColumns.value = [
-          { name: 'studentID', label: 'ID', field: 'studentID', align: 'left' },
           { name: 'firstName', label: 'First Name', field: 'firstName', align: 'left' },
           { name: 'lastName', label: 'Last Name', field: 'lastName', align: 'left' },
           { name: 'email', label: 'Email', field: 'email', align: 'left' },
@@ -316,9 +348,7 @@ export default {
         reportData.value = response.data
         currentReportTitle.value = 'Students by Class Report'
         reportColumns.value = [
-          { name: 'classID', label: 'Class', field: 'classID', align: 'left' },
           { name: 'courseName', label: 'Course', field: 'courseName', align: 'left' },
-          { name: 'studentID', label: 'Student ID', field: 'studentID', align: 'left' },
           { name: 'firstName', label: 'First Name', field: 'firstName', align: 'left' },
           { name: 'lastName', label: 'Last Name', field: 'lastName', align: 'left' },
           { name: 'certificateNumber', label: 'Certificate', field: 'certificateNumber', align: 'left' },
@@ -363,6 +393,10 @@ export default {
       }
     }
 
+    onMounted(() => {
+      loadClasses()
+    })
+
     return {
       incomeFilters,
       studentsFilters,
@@ -372,6 +406,9 @@ export default {
       currentReportTitle,
       reportData,
       reportColumns,
+      availableClasses,
+      loadingClasses,
+      formatDate,
       generateIncomeReport,
       downloadIncomeCSV,
       generateStudentsReport,

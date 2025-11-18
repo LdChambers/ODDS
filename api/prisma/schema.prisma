@@ -50,10 +50,11 @@ model School {
   updatedAt             DateTime?
   deletedAt             DateTime?
 
-  users     User[]
-  classes   Class[]
-  students  Student[]
-  locations Location[]
+  users       User[]
+  classes     Class[]
+  students    Student[]
+  locations   Location[]
+  instructors Instructor[]
 
   @@index([deletedAt])
 }
@@ -138,6 +139,7 @@ model Student {
 
 model Instructor {
   instructorID Int       @id @default(autoincrement())
+  fk_schoolID  Int       @default(0)
   lastName     String?
   firstName    String?
   addressLine1 String?
@@ -152,8 +154,10 @@ model Instructor {
   updatedAt    DateTime?
   deletedAt    DateTime?
 
+  school  School  @relation(fields: [fk_schoolID], references: [schoolID])
   classes Class[]
 
+  @@index([fk_schoolID])
   @@index([lastName, firstName])
   @@index([deletedAt])
 }

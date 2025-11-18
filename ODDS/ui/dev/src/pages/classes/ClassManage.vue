@@ -123,6 +123,16 @@
                 flat
                 dense
                 round
+                icon="edit"
+                color="primary"
+                @click="editStudent(props.row)"
+              >
+                <q-tooltip>Edit Student</q-tooltip>
+              </q-btn>
+              <q-btn
+                flat
+                dense
+                round
                 icon="card_membership"
                 color="green"
                 @click="processSingleCertificate(props.row)"
@@ -366,6 +376,10 @@ export default {
       }
     }
 
+    const editStudent = (student) => {
+      router.push(`/students/${student.studentID}/edit`)
+    }
+
     onMounted(() => {
       loadClass()
     })
@@ -386,7 +400,8 @@ export default {
       emailAllCertificates,
       processSingleCertificate,
       emailSingleCertificate,
-      recordPayment
+      recordPayment,
+      editStudent
     }
   }
 }

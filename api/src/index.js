@@ -9,6 +9,7 @@ import locationRoutes from './routes/locations.js';
 import courseRoutes from './routes/courses.js';
 import reportRoutes from './routes/reports.js';
 import publicRoutes from './routes/public.js';
+import schoolRoutes from './routes/schools.js';
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -26,6 +27,7 @@ app.use('/locations', locationRoutes);
 app.use('/courses', courseRoutes);
 app.use('/reports', reportRoutes);
 app.use('/public', publicRoutes);
+app.use('/schools', schoolRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

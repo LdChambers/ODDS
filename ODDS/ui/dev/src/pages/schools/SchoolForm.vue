@@ -1,56 +1,43 @@
 <template>
   <q-page padding>
     <div class="row justify-between items-center q-mb-lg">
-      <div class="text-h4">{{ isEdit ? 'Edit Instructor' : 'Add Instructor' }}</div>
-      <q-btn flat label="Back to List" icon="arrow_back" @click="$router.push('/instructors')" />
+      <div class="text-h4">{{ isEdit ? 'Edit School' : 'Add School' }}</div>
+      <q-btn flat label="Back to List" icon="arrow_back" @click="$router.push('/schools')" />
     </div>
 
     <q-card>
       <q-card-section>
         <q-form @submit="onSubmit" class="q-gutter-md">
           <div class="row q-col-gutter-md">
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-8">
               <q-input
-                v-model="form.firstName"
+                v-model="form.name"
                 outlined
-                label="First Name *"
+                label="School Name *"
                 :rules="[val => !!val || 'Required']"
               />
             </div>
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-4">
               <q-input
-                v-model="form.lastName"
+                v-model="form.shortName"
                 outlined
-                label="Last Name *"
+                label="Short Name *"
                 :rules="[val => !!val || 'Required']"
+                hint="Abbreviation or short code"
               />
             </div>
           </div>
 
-          <q-select
-            v-model="form.fk_schoolID"
-            outlined
-            label="School *"
-            :options="schools"
-            option-label="name"
-            option-value="schoolID"
-            emit-value
-            map-options
-            :rules="[val => !!val || 'Required']"
-            :loading="loadingSchools"
-            :disable="!authStore.hasGlobalPermissions"
-          >
-            <template v-slot:option="scope">
-              <q-item v-bind="scope.itemProps">
-                <q-item-section>
-                  <q-item-label>{{ scope.opt.name }}</q-item-label>
-                  <q-item-label caption>{{ scope.opt.city }}</q-item-label>
-                </q-item-section>
-              </q-item>
-            </template>
-          </q-select>
+          <div class="text-h6 q-mt-md">Contact Information</div>
 
           <div class="row q-col-gutter-md">
+            <div class="col-12 col-md-6">
+              <q-input
+                v-model="form.contactName"
+                outlined
+                label="Contact Name"
+              />
+            </div>
             <div class="col-12 col-md-6">
               <q-input
                 v-model="form.email"
@@ -59,15 +46,28 @@
                 label="Email"
               />
             </div>
+          </div>
+
+          <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
               <q-input
-                v-model="form.phone"
+                v-model="form.phoneNumber"
                 outlined
-                label="Phone"
+                label="Phone Number"
                 mask="(###) ###-####"
               />
             </div>
+            <div class="col-12 col-md-6">
+              <q-input
+                v-model="form.url"
+                outlined
+                type="url"
+                label="Website URL"
+              />
+            </div>
           </div>
+
+          <div class="text-h6 q-mt-md">Address</div>
 
           <q-input
             v-model="form.addressLine1"
@@ -112,6 +112,17 @@
             </div>
           </div>
 
+          <div class="text-h6 q-mt-md">Additional Settings</div>
+
+          <q-select
+            v-model="form.defaultDayOfWeek"
+            outlined
+            label="Default Day of Week"
+            :options="daysOfWeek"
+            emit-value
+            map-options
+          />
+
           <q-input
             v-model="form.notes"
             outlined
@@ -124,10 +135,10 @@
             <q-btn
               type="submit"
               color="primary"
-              :label="isEdit ? 'Update Instructor' : 'Create Instructor'"
+              :label="isEdit ? 'Update School' : 'Create School'"
               :loading="loading"
             />
-            <q-btn flat label="Cancel" @click="$router.push('/instructors')" />
+            <q-btn flat label="Cancel" @click="$router.push('/schools')" />
           </div>
         </q-form>
       </q-card-section>
@@ -139,11 +150,11 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useQuasar } from 'quasar'
-import { instructorsAPI, publicAPI, schoolsAPI } from 'src/services/api'
+import { schoolsAPI, publicAPI } from 'src/services/api'
 import { useAuthStore } from 'src/stores/auth'
 
 export default {
-  name: 'InstructorForm',
+  name: 'SchoolForm',
 
   setup() {
     const $q = useQuasar()
@@ -153,22 +164,32 @@ export default {
 
     const loading = ref(false)
     const loadingStates = ref(false)
-    const loadingSchools = ref(false)
     const isEdit = computed(() => !!route.params.id)
     const states = ref([])
-    const schools = ref([])
+
+    const daysOfWeek = [
+      { label: 'Sunday', value: 0 },
+      { label: 'Monday', value: 1 },
+      { label: 'Tuesday', value: 2 },
+      { label: 'Wednesday', value: 3 },
+      { label: 'Thursday', value: 4 },
+      { label: 'Friday', value: 5 },
+      { label: 'Saturday', value: 6 }
+    ]
 
     const form = ref({
-      fk_schoolID: authStore.userSchoolId,
-      firstName: '',
-      lastName: '',
+      name: '',
+      shortName: '',
+      contactName: '',
       email: '',
-      phone: '',
+      phoneNumber: '',
+      url: '',
       addressLine1: '',
       addressLine2: '',
       city: '',
       fk_stateID: null,
       zipCode: '',
+      defaultDayOfWeek: 1,
       notes: ''
     })
 
@@ -184,65 +205,58 @@ export default {
       }
     }
 
-    const loadSchools = async () => {
-      loadingSchools.value = true
-      try {
-        const response = await schoolsAPI.list({ limit: 1000 })
-        schools.value = response.data.schools
-        
-        // Set default school if not set
-        if (!form.value.fk_schoolID && schools.value.length > 0 && !authStore.hasGlobalPermissions) {
-          form.value.fk_schoolID = authStore.userSchoolId
-        }
-      } catch (error) {
-        console.error('Failed to load schools:', error)
-      } finally {
-        loadingSchools.value = false
-      }
-    }
-
-    const loadInstructor = async () => {
+    const loadSchool = async () => {
       if (!isEdit.value) return
 
       loading.value = true
       try {
-        const response = await instructorsAPI.get(route.params.id)
+        const response = await schoolsAPI.get(route.params.id)
         form.value = response.data
       } catch (error) {
         $q.notify({
           type: 'negative',
-          message: 'Failed to load instructor',
+          message: 'Failed to load school',
           caption: error.response?.data?.error || error.message
         })
-        router.push('/instructors')
+        router.push('/schools')
       } finally {
         loading.value = false
       }
     }
 
     const onSubmit = async () => {
+      // Check if user has permissions
+      if (!authStore.hasGlobalPermissions) {
+        $q.notify({
+          type: 'negative',
+          message: 'Insufficient permissions',
+          caption: 'Only admins can create/edit schools'
+        })
+        return
+      }
+
       loading.value = true
 
       try {
         if (isEdit.value) {
-          await instructorsAPI.update(route.params.id, form.value)
+          await schoolsAPI.update(route.params.id, form.value)
           $q.notify({
             type: 'positive',
-            message: 'Instructor updated successfully!'
+            message: 'School updated successfully!'
           })
         } else {
-          await instructorsAPI.create(form.value)
+          await schoolsAPI.create(form.value)
           $q.notify({
             type: 'positive',
-            message: 'Instructor created successfully!'
+            message: 'School created successfully!'
           })
         }
 
-        router.push('/instructors')
+        router.push('/schools')
       } catch (error) {
         $q.notify({
           type: 'negative',
-          message: isEdit.value ? 'Failed to update instructor' : 'Failed to create instructor',
+          message: isEdit.value ? 'Failed to update school' : 'Failed to create school',
           caption: error.response?.data?.error || error.message
         })
       } finally {
@@ -252,19 +266,16 @@ export default {
 
     onMounted(() => {
       loadStates()
-      loadSchools()
-      loadInstructor()
+      loadSchool()
     })
 
     return {
       form,
       loading,
       loadingStates,
-      loadingSchools,
       isEdit,
       states,
-      schools,
-      authStore,
+      daysOfWeek,
       onSubmit
     }
   }
