@@ -7,18 +7,19 @@ async function main() {
   console.log('Seeding database...');
 
   // Clear existing data (in reverse order of dependencies)
+  // Delete child records first, then parents
   await prisma.student.deleteMany();
   await prisma.class.deleteMany();
-  await prisma.location.deleteMany();
   await prisma.user.deleteMany();
-  await prisma.school.deleteMany();
   await prisma.instructor.deleteMany();
+  await prisma.location.deleteMany();
+  await prisma.school.deleteMany();
+  await prisma.courseProvider.deleteMany();
   await prisma.course.deleteMany();
-  await prisma.state.deleteMany();
-  await prisma.county.deleteMany();
   await prisma.classReason.deleteMany();
   await prisma.deliveryMethod.deleteMany();
-  await prisma.courseProvider.deleteMany();
+  await prisma.county.deleteMany();
+  await prisma.state.deleteMany();
 
   // Create States (All 50 US States)
   const statesList = [
