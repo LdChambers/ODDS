@@ -7,13 +7,24 @@ const prisma = new PrismaClient();
 
 router.use(authenticateToken);
 
+// Helper to apply school-based filtering
+const getSchoolFilter = (user) => {
+  if (user.hasGlobalPermissions) {
+    return {}; // Can see all schools
+  }
+  return { fk_schoolID: user.fk_schoolID }; // Only their school
+};
+
 // GET /instructors
 router.get('/', async (req, res) => {
   try {
     const { page = 1, limit = 50, sortBy = 'lastName', sortOrder = 'asc' } = req.query;
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
-    const where = { deletedAt: null };
+    const where = { 
+      deletedAt: null,
+      ...getSchoolFilter(req.user)
+    };
 
     const [instructors, total] = await Promise.all([
       prisma.instructor.findMany({
@@ -46,7 +57,8 @@ router.get('/:id', async (req, res) => {
     const instructor = await prisma.instructor.findFirst({
       where: {
         instructorID: parseInt(req.params.id),
-        deletedAt: null
+        deletedAt: null,
+        ...getSchoolFilter(req.user)
       },
       include: {
         classes: {
@@ -74,8 +86,15 @@ router.get('/:id', async (req, res) => {
 // POST /instructors
 router.post('/', async (req, res) => {
   try {
+    const data = { ...req.body };
+    
+    // If user doesn't have global permissions, force their school
+    if (!req.user.hasGlobalPermissions) {
+      data.fk_schoolID = req.user.fk_schoolID;
+    }
+    
     const instructor = await prisma.instructor.create({
-      data: req.body
+      data
     });
 
     res.status(201).json(instructor);
@@ -91,7 +110,8 @@ router.put('/:id', async (req, res) => {
     const existing = await prisma.instructor.findFirst({
       where: {
         instructorID: parseInt(req.params.id),
-        deletedAt: null
+        deletedAt: null,
+        ...getSchoolFilter(req.user)
       }
     });
 
@@ -102,6 +122,11 @@ router.put('/:id', async (req, res) => {
     const data = { ...req.body };
     delete data.instructorID;
     delete data.createdAt;
+    
+    // If user doesn't have global permissions, force their school
+    if (!req.user.hasGlobalPermissions) {
+      data.fk_schoolID = req.user.fk_schoolID;
+    }
 
     const instructor = await prisma.instructor.update({
       where: { instructorID: parseInt(req.params.id) },
@@ -124,7 +149,8 @@ router.delete('/:id', async (req, res) => {
     const existing = await prisma.instructor.findFirst({
       where: {
         instructorID: parseInt(req.params.id),
-        deletedAt: null
+        deletedAt: null,
+        ...getSchoolFilter(req.user)
       }
     });
 
