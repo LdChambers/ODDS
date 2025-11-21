@@ -1,6 +1,6 @@
 <template>
   <q-page padding class="flex flex-center">
-    <q-card style="width: 600px; max-width: 90vw;">
+    <q-card class="q-px-md" style="width: 600px; max-width: 90vw;">
       <q-card-section class="bg-primary text-white">
         <div class="text-h5">Enroll in Class</div>
         <div class="text-subtitle2" v-if="classInfo">
@@ -21,7 +21,11 @@
         <q-separator class="q-my-md" />
 
         <q-form @submit="onSubmit" class="q-gutter-md">
-          <div class="text-h6">Student Information</div>
+          <div class="row q-col-gutter-md">
+            <div class="col-12">
+              <div class="text-h6">Student Information</div>
+            </div>
+          </div>
 
           <div class="row q-col-gutter-md">
             <div class="col-6">
@@ -42,28 +46,40 @@
             </div>
           </div>
 
-          <q-input
-            v-model="form.email"
-            outlined
-            type="email"
-            label="Email *"
-            :rules="[val => !!val || 'Required']"
-          />
+          <div class="row q-col-gutter-md">
+            <div class="col-12">
+              <q-input
+                v-model="form.email"
+                outlined
+                type="email"
+                label="Email *"
+                :rules="[val => !!val || 'Required']"
+              />
+            </div>
+          </div>
 
-          <q-input
-            v-model="form.phoneNumber"
-            outlined
-            label="Phone Number *"
-            mask="(###) ###-####"
-            :rules="[val => !!val || 'Required']"
-          />
+          <div class="row q-col-gutter-md">
+            <div class="col-12">
+              <q-input
+                v-model="form.phoneNumber"
+                outlined
+                label="Phone Number *"
+                mask="(###) ###-####"
+                :rules="[val => !!val || 'Required']"
+              />
+            </div>
+          </div>
 
-          <q-input
-            v-model="form.addressLine1"
-            outlined
-            label="Address *"
-            :rules="[val => !!val || 'Required']"
-          />
+          <div class="row q-col-gutter-md">
+            <div class="col-12">
+              <q-input
+                v-model="form.addressLine1"
+                outlined
+                label="Address *"
+                :rules="[val => !!val || 'Required']"
+              />
+            </div>
+          </div>
 
           <div class="row q-col-gutter-md">
             <div class="col-6">
@@ -108,33 +124,45 @@
             </div>
           </div>
 
-          <q-select
-            v-model="form.fk_licenseStateID"
-            outlined
-            label="License State *"
-            :options="states"
-            option-label="name"
-            option-value="stateID"
-            emit-value
-            map-options
-            :rules="[val => !!val || 'Required']"
-          />
+          <div class="row q-col-gutter-md">
+            <div class="col-12">
+              <q-select
+                v-model="form.fk_licenseStateID"
+                outlined
+                label="License State *"
+                :options="states"
+                option-label="name"
+                option-value="stateID"
+                emit-value
+                map-options
+                :rules="[val => !!val || 'Required']"
+              />
+            </div>
+          </div>
 
-          <q-input
-            v-model="form.birthDate"
-            outlined
-            type="date"
-            label="Birth Date *"
-            :rules="[val => !!val || 'Required']"
-          />
+          <div class="row q-col-gutter-md">
+            <div class="col-12">
+              <q-input
+                v-model="form.birthDate"
+                outlined
+                type="date"
+                label="Birth Date *"
+                :rules="[val => !!val || 'Required']"
+              />
+            </div>
+          </div>
 
-          <q-btn
-            type="submit"
-            color="primary"
-            label="Enroll"
-            class="full-width"
-            :loading="loading"
-          />
+          <div class="row q-col-gutter-md">
+            <div class="col-12">
+              <q-btn
+                type="submit"
+                color="primary"
+                label="Enroll"
+                class="full-width"
+                :loading="loading"
+              />
+            </div>
+          </div>
         </q-form>
       </q-card-section>
 

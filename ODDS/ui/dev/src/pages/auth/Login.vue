@@ -55,14 +55,16 @@
             />
           </div>
 
-          <q-btn
-            type="submit"
-            color="primary"
-            label="Login"
-            class="full-width"
-            size="lg"
-            :loading="loading"
-          />
+          <div class="row justify-center q-mt-md q-mb-md">
+            <q-btn
+              type="submit"
+              color="primary"
+              label="Login"
+              style="min-width: 200px;"
+              size="lg"
+              :loading="loading"
+            />
+          </div>
         </q-form>
       </q-card-section>
 

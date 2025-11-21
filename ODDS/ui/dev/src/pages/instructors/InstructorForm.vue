@@ -5,7 +5,7 @@
       <q-btn flat label="Back to List" icon="arrow_back" @click="$router.push('/instructors')" />
     </div>
 
-    <q-card>
+    <q-card class="q-px-md">
       <q-card-section>
         <q-form @submit="onSubmit" class="q-gutter-md">
           <div class="row q-col-gutter-md">
@@ -27,28 +27,32 @@
             </div>
           </div>
 
-          <q-select
-            v-model="form.fk_schoolID"
-            outlined
-            label="School *"
-            :options="schools"
-            option-label="name"
-            option-value="schoolID"
-            emit-value
-            map-options
-            :rules="[val => !!val || 'Required']"
-            :loading="loadingSchools"
-            :disable="!authStore.hasGlobalPermissions"
-          >
-            <template v-slot:option="scope">
-              <q-item v-bind="scope.itemProps">
-                <q-item-section>
-                  <q-item-label>{{ scope.opt.name }}</q-item-label>
-                  <q-item-label caption>{{ scope.opt.city }}</q-item-label>
-                </q-item-section>
-              </q-item>
-            </template>
-          </q-select>
+          <div class="row q-col-gutter-md">
+            <div class="col-12">
+              <q-select
+                v-model="form.fk_schoolID"
+                outlined
+                label="School *"
+                :options="schools"
+                option-label="name"
+                option-value="schoolID"
+                emit-value
+                map-options
+                :rules="[val => !!val || 'Required']"
+                :loading="loadingSchools"
+                :disable="!authStore.hasGlobalPermissions"
+              >
+                <template v-slot:option="scope">
+                  <q-item v-bind="scope.itemProps">
+                    <q-item-section>
+                      <q-item-label>{{ scope.opt.name }}</q-item-label>
+                      <q-item-label caption>{{ scope.opt.city }}</q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
+            </div>
+          </div>
 
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
@@ -57,6 +61,7 @@
                 outlined
                 type="email"
                 label="Email"
+                bottom-slots
               />
             </div>
             <div class="col-12 col-md-6">
@@ -65,21 +70,32 @@
                 outlined
                 label="Phone"
                 mask="(###) ###-####"
+                bottom-slots
               />
             </div>
           </div>
 
-          <q-input
-            v-model="form.addressLine1"
-            outlined
-            label="Address Line 1"
-          />
+          <div class="row q-col-gutter-md">
+            <div class="col-12">
+              <q-input
+                v-model="form.addressLine1"
+                outlined
+                label="Address Line 1"
+                bottom-slots
+              />
+            </div>
+          </div>
 
-          <q-input
-            v-model="form.addressLine2"
-            outlined
-            label="Address Line 2"
-          />
+          <div class="row q-col-gutter-md">
+            <div class="col-12">
+              <q-input
+                v-model="form.addressLine2"
+                outlined
+                label="Address Line 2"
+                bottom-slots
+              />
+            </div>
+          </div>
 
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
@@ -87,6 +103,7 @@
                 v-model="form.city"
                 outlined
                 label="City"
+                bottom-slots
               />
             </div>
             <div class="col-12 col-md-3">
@@ -101,6 +118,7 @@
                 map-options
                 :loading="loadingStates"
                 clearable
+                bottom-slots
               />
             </div>
             <div class="col-12 col-md-3">
@@ -108,17 +126,23 @@
                 v-model="form.zipCode"
                 outlined
                 label="ZIP Code"
+                bottom-slots
               />
             </div>
           </div>
 
-          <q-input
-            v-model="form.notes"
-            outlined
-            type="textarea"
-            label="Notes"
-            rows="3"
-          />
+          <div class="row q-col-gutter-md">
+            <div class="col-12">
+              <q-input
+                v-model="form.notes"
+                outlined
+                type="textarea"
+                label="Notes"
+                rows="3"
+                bottom-slots
+              />
+            </div>
+          </div>
 
           <div class="row q-gutter-md">
             <q-btn

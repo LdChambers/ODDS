@@ -5,28 +5,68 @@
       <q-btn flat label="Back to List" icon="arrow_back" @click="$router.push('/locations')" />
     </div>
 
-    <q-card>
+    <q-card class="q-px-md">
       <q-card-section>
         <q-form @submit="onSubmit" class="q-gutter-md">
-          <q-input
-            v-model="form.name"
-            outlined
-            label="Location Name *"
-            :rules="[val => !!val || 'Required']"
-          />
+          <div class="row q-col-gutter-md">
+            <div class="col-12">
+              <q-input
+                v-model="form.name"
+                outlined
+                label="Location Name *"
+                :rules="[val => !!val || 'Required']"
+              />
+            </div>
+          </div>
 
-          <q-input
-            v-model="form.addressLine1"
-            outlined
-            label="Address Line 1 *"
-            :rules="[val => !!val || 'Required']"
-          />
+          <div class="row q-col-gutter-md">
+            <div class="col-12">
+              <q-select
+                v-model="form.fk_schoolID"
+                outlined
+                label="School *"
+                :options="schools"
+                option-label="name"
+                option-value="schoolID"
+                emit-value
+                map-options
+                :rules="[val => !!val || 'Required']"
+                :loading="loadingSchools"
+                :disable="!authStore.hasGlobalPermissions"
+              >
+                <template v-slot:option="scope">
+                  <q-item v-bind="scope.itemProps">
+                    <q-item-section>
+                      <q-item-label>{{ scope.opt.name }}</q-item-label>
+                      <q-item-label caption>{{ scope.opt.city }}</q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
+            </div>
+          </div>
 
-          <q-input
-            v-model="form.addressLine2"
-            outlined
-            label="Address Line 2"
-          />
+          <div class="row q-col-gutter-md">
+            <div class="col-12">
+              <q-input
+                v-model="form.addressLine1"
+                outlined
+                label="Address Line 1 *"
+                :rules="[val => !!val || 'Required']"
+              />
+            </div>
+          </div>
+
+          <div class="row q-col-gutter-md">
+            <div class="col-12">
+              <q-input
+                v-model="form.addressLine2"
+                outlined
+                label="Address Line 2"
+                bottom-slots
+              />
+            </div>
+          </div>
 
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
@@ -80,7 +120,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useQuasar } from 'quasar'
-import { locationsAPI, publicAPI } from 'src/services/api'
+import { locationsAPI, publicAPI, schoolsAPI } from 'src/services/api'
 import { useAuthStore } from 'src/stores/auth'
 
 export default {
@@ -94,15 +134,17 @@ export default {
 
     const loading = ref(false)
     const loadingStates = ref(false)
+    const loadingSchools = ref(false)
     const isEdit = computed(() => !!route.params.id)
     const states = ref([])
+    const schools = ref([])
 
     const form = ref({
       name: '',
       addressLine1: '',
       addressLine2: '',
       city: '',
-      fk_stateID: null,
+      fk_stateID: 1, // Default to first state
       zipCode: '',
       fk_schoolID: authStore.userSchoolId
     })
@@ -121,6 +163,23 @@ export default {
         console.error('Failed to load states:', error)
       } finally {
         loadingStates.value = false
+      }
+    }
+
+    const loadSchools = async () => {
+      loadingSchools.value = true
+      try {
+        const response = await schoolsAPI.list({ limit: 1000 })
+        schools.value = response.data.schools
+        
+        // Set default school if not set
+        if (!form.value.fk_schoolID && schools.value.length > 0 && !authStore.hasGlobalPermissions) {
+          form.value.fk_schoolID = authStore.userSchoolId
+        }
+      } catch (error) {
+        console.error('Failed to load schools:', error)
+      } finally {
+        loadingSchools.value = false
       }
     }
 
@@ -180,6 +239,7 @@ export default {
 
     onMounted(() => {
       loadStates()
+      loadSchools()
       loadLocation()
     })
 
@@ -187,8 +247,11 @@ export default {
       form,
       loading,
       loadingStates,
+      loadingSchools,
       isEdit,
       states,
+      schools,
+      authStore,
       onSubmit
     }
   }

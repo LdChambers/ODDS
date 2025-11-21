@@ -5,7 +5,7 @@
     <div class="row q-col-gutter-md">
       <!-- Income Report -->
       <div class="col-12 col-md-6">
-        <q-card>
+        <q-card class="full-height">
           <q-card-section class="bg-green-5 text-white">
             <div class="text-h6">Income Report</div>
           </q-card-section>
@@ -46,7 +46,7 @@
       </div>
 
       <!-- Students Report -->
-      <div class="col-12 col-md-6">
+      <div class="col-12 col-md-6" v-if="false">
         <q-card>
           <q-card-section class="bg-blue-5 text-white">
             <div class="text-h6">Students Report</div>
@@ -88,7 +88,7 @@
       </div>
 
       <!-- Students by Class Report -->
-      <div class="col-12 col-md-6">
+      <div class="col-12 col-md-6" v-if="false">
         <q-card>
           <q-card-section class="bg-purple-5 text-white">
             <div class="text-h6">Students by Class</div>
@@ -137,7 +137,7 @@
 
       <!-- Certificate Export -->
       <div class="col-12 col-md-6">
-        <q-card>
+        <q-card class="full-height">
           <q-card-section class="bg-orange-5 text-white">
             <div class="text-h6">Certificate Export (State)</div>
           </q-card-section>
@@ -148,20 +148,23 @@
                 outlined
                 type="date"
                 label="Start Date (optional)"
+                bottom-slots
               />
               <q-input
                 v-model="certificateFilters.endDate"
                 outlined
                 type="date"
                 label="End Date (optional)"
+                bottom-slots
               />
-              <q-btn
-                type="submit"
-                color="green"
-                label="Export CSV for State"
-                icon="download"
-                class="full-width"
-              />
+              <div class="row q-gutter-sm">
+                <q-btn
+                  type="submit"
+                  color="green"
+                  label="Export CSV for State"
+                  icon="download"
+                />
+              </div>
             </q-form>
           </q-card-section>
         </q-card>
@@ -178,18 +181,44 @@
         </q-card-section>
 
         <q-card-section v-if="reportData">
-          <div class="q-mb-md" v-if="reportData.summary">
-            <strong>Summary:</strong>
-            <pre>{{ JSON.stringify(reportData.summary, null, 2) }}</pre>
-          </div>
-
           <q-table
             v-if="reportData.report"
             :rows="reportData.report"
             :columns="reportColumns"
             :pagination="{ rowsPerPage: 25 }"
-            row-key="id"
+            :row-key="reportRowKey"
           />
+
+          <!-- Totals Section -->
+          <div v-if="reportData.summary" class="q-mt-lg q-pa-md bg-grey-2 rounded-borders">
+            <div class="text-h6 q-mb-md">Summary</div>
+            <div class="row q-col-gutter-md">
+              <div class="col-12 col-md-3" v-if="reportData.summary.totalClasses !== undefined">
+                <div class="text-subtitle2 text-grey-7">Total Classes</div>
+                <div class="text-h5">{{ reportData.summary.totalClasses }}</div>
+              </div>
+              <div class="col-12 col-md-3" v-if="reportData.summary.totalStudents !== undefined">
+                <div class="text-subtitle2 text-grey-7">Total Students</div>
+                <div class="text-h5">{{ reportData.summary.totalStudents }}</div>
+              </div>
+              <div class="col-12 col-md-3" v-if="reportData.summary.totalRevenue !== undefined">
+                <div class="text-subtitle2 text-grey-7">Expected Revenue</div>
+                <div class="text-h5">${{ reportData.summary.totalRevenue.toFixed(2) }}</div>
+              </div>
+              <div class="col-12 col-md-3" v-if="reportData.summary.totalPaid !== undefined">
+                <div class="text-subtitle2 text-grey-7">Total Paid</div>
+                <div class="text-h5 text-green">${{ reportData.summary.totalPaid.toFixed(2) }}</div>
+              </div>
+              <div class="col-12 col-md-3" v-if="reportData.summary.paidCount !== undefined">
+                <div class="text-subtitle2 text-grey-7">Paid Students</div>
+                <div class="text-h5">{{ reportData.summary.paidCount }}</div>
+              </div>
+              <div class="col-12 col-md-3" v-if="reportData.summary.unpaidCount !== undefined">
+                <div class="text-subtitle2 text-grey-7">Unpaid Students</div>
+                <div class="text-h5">{{ reportData.summary.unpaidCount }}</div>
+              </div>
+            </div>
+          </div>
         </q-card-section>
       </q-card>
     </q-dialog>
@@ -211,6 +240,7 @@ export default {
     const currentReportTitle = ref('')
     const reportData = ref(null)
     const reportColumns = ref([])
+    const reportRowKey = ref('id')
 
     const incomeFilters = ref({
       startDate: '',
@@ -260,6 +290,7 @@ export default {
 
         reportData.value = response.data
         currentReportTitle.value = 'Income Report'
+        reportRowKey.value = 'classID'
         reportColumns.value = [
           { name: 'schoolName', label: 'School', field: 'schoolName', align: 'left' },
           { name: 'courseName', label: 'Course', field: 'courseName', align: 'left' },
@@ -304,6 +335,7 @@ export default {
 
         reportData.value = response.data
         currentReportTitle.value = 'Students Report'
+        reportRowKey.value = 'studentID'
         reportColumns.value = [
           { name: 'firstName', label: 'First Name', field: 'firstName', align: 'left' },
           { name: 'lastName', label: 'Last Name', field: 'lastName', align: 'left' },
@@ -347,6 +379,7 @@ export default {
 
         reportData.value = response.data
         currentReportTitle.value = 'Students by Class Report'
+        reportRowKey.value = 'studentID'
         reportColumns.value = [
           { name: 'courseName', label: 'Course', field: 'courseName', align: 'left' },
           { name: 'firstName', label: 'First Name', field: 'firstName', align: 'left' },
@@ -406,6 +439,7 @@ export default {
       currentReportTitle,
       reportData,
       reportColumns,
+      reportRowKey,
       availableClasses,
       loadingClasses,
       formatDate,

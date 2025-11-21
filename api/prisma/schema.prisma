@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url      = "file:./dev.db"
 }
 
 model User {
@@ -61,9 +61,10 @@ model School {
 
 model Class {
   classID        Int       @id @default(autoincrement())
+  name           String?
   fk_schoolID    Int?
   fk_locationID  Int?
-  fk_courseID    Int
+  fk_courseID    Int?
   fk_InstructorID Int?
   amountPaid     Float     @default(0.00)
   completionDate DateTime?
@@ -74,7 +75,7 @@ model Class {
 
   school     School?     @relation(fields: [fk_schoolID], references: [schoolID])
   location   Location?   @relation(fields: [fk_locationID], references: [locationID])
-  course     Course      @relation(fields: [fk_courseID], references: [courseID])
+  course     Course?     @relation(fields: [fk_courseID], references: [courseID])
   instructor Instructor? @relation(fields: [fk_InstructorID], references: [instructorID])
   students   Student[]
 
@@ -85,7 +86,7 @@ model Student {
   studentID                  Int       @id @default(autoincrement())
   fk_schoolID                Int
   fk_classID                 Int
-  fk_classReasonID           Int?      @default(0)
+  fk_classReasonID           Int?
   firstName                  String
   middleInitial              String?
   lastName                   String
@@ -104,16 +105,16 @@ model Student {
   dateCompleted              DateTime?
   dateProcessed              DateTime?
   finalGrade                 Int?      @default(0)
-  fk_ticketingStateID        Int?      @default(0)
-  fk_ticketingCountyID       Int?      @default(0)
-  fk_ticketingJurisdictionID Int?      @default(0)
+  fk_ticketingStateID        Int?
+  fk_ticketingCountyID       Int?
+  fk_ticketingJurisdictionID Int?
   certificateNumber          String?
   trackingNumber             String?
   trackingURL                String?
   shippedEmailSent           Int?      @default(0)
-  fk_deliveryPackageID       Int?      @default(0)
-  fk_drivingRecordPackageID  Int?      @default(0)
-  fk_digitalCopyPackageID    Int?      @default(0)
+  fk_deliveryPackageID       Int?
+  fk_drivingRecordPackageID  Int?
+  fk_digitalCopyPackageID    Int?
   fee                        Float?    @default(10.00)
   notes                      String?
   isPaid                     Int       @default(0)
@@ -177,6 +178,7 @@ model Location {
   deletedAt    DateTime?
 
   school  School  @relation(fields: [fk_schoolID], references: [schoolID])
+  state   State   @relation(fields: [fk_stateID], references: [stateID])
   classes Class[]
 
   @@index([deletedAt])
@@ -210,6 +212,7 @@ model State {
 
   students             Student[] @relation("StudentState")
   studentsLicenseState Student[] @relation("StudentLicenseState")
+  locations            Location[]
 
   @@index([abbreviation])
   @@index([priority])

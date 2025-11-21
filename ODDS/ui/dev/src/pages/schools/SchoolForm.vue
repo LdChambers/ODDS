@@ -5,7 +5,7 @@
       <q-btn flat label="Back to List" icon="arrow_back" @click="$router.push('/schools')" />
     </div>
 
-    <q-card>
+    <q-card class="q-px-md">
       <q-card-section>
         <q-form @submit="onSubmit" class="q-gutter-md">
           <div class="row q-col-gutter-md">
@@ -28,14 +28,13 @@
             </div>
           </div>
 
-          <div class="text-h6 q-mt-md">Contact Information</div>
-
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
               <q-input
                 v-model="form.contactName"
                 outlined
                 label="Contact Name"
+                bottom-slots
               />
             </div>
             <div class="col-12 col-md-6">
@@ -44,6 +43,7 @@
                 outlined
                 type="email"
                 label="Email"
+                bottom-slots
               />
             </div>
           </div>
@@ -55,6 +55,7 @@
                 outlined
                 label="Phone Number"
                 mask="(###) ###-####"
+                bottom-slots
               />
             </div>
             <div class="col-12 col-md-6">
@@ -63,23 +64,33 @@
                 outlined
                 type="url"
                 label="Website URL"
+                bottom-slots
               />
             </div>
           </div>
 
-          <div class="text-h6 q-mt-md">Address</div>
 
-          <q-input
-            v-model="form.addressLine1"
-            outlined
-            label="Address Line 1"
-          />
+          <div class="row q-col-gutter-md">
+            <div class="col-12">
+              <q-input
+                v-model="form.addressLine1"
+                outlined
+                label="Address Line 1"
+                bottom-slots
+              />
+            </div>
+          </div>
 
-          <q-input
-            v-model="form.addressLine2"
-            outlined
-            label="Address Line 2"
-          />
+          <div class="row q-col-gutter-md">
+            <div class="col-12">
+              <q-input
+                v-model="form.addressLine2"
+                outlined
+                label="Address Line 2"
+                bottom-slots
+              />
+            </div>
+          </div>
 
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
@@ -87,6 +98,7 @@
                 v-model="form.city"
                 outlined
                 label="City"
+                bottom-slots
               />
             </div>
             <div class="col-12 col-md-3">
@@ -101,6 +113,7 @@
                 map-options
                 :loading="loadingStates"
                 clearable
+                bottom-slots
               />
             </div>
             <div class="col-12 col-md-3">
@@ -108,28 +121,38 @@
                 v-model="form.zipCode"
                 outlined
                 label="ZIP Code"
+                bottom-slots
               />
             </div>
           </div>
 
-          <div class="text-h6 q-mt-md">Additional Settings</div>
 
-          <q-select
-            v-model="form.defaultDayOfWeek"
-            outlined
-            label="Default Day of Week"
-            :options="daysOfWeek"
-            emit-value
-            map-options
-          />
+          <div class="row q-col-gutter-md">
+            <div class="col-12">
+              <q-select
+                v-model="form.defaultDayOfWeek"
+                outlined
+                label="Default Day of Week"
+                :options="daysOfWeek"
+                emit-value
+                map-options
+                bottom-slots
+              />
+            </div>
+          </div>
 
-          <q-input
-            v-model="form.notes"
-            outlined
-            type="textarea"
-            label="Notes"
-            rows="3"
-          />
+          <div class="row q-col-gutter-md">
+            <div class="col-12">
+              <q-input
+                v-model="form.notes"
+                outlined
+                type="textarea"
+                label="Notes"
+                rows="3"
+                bottom-slots
+              />
+            </div>
+          </div>
 
           <div class="row q-gutter-md">
             <q-btn

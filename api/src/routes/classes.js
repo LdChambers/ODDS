@@ -105,49 +105,70 @@ router.get('/:id', async (req, res) => {
 // POST /classes - Create new class (UC-1)
 router.post('/', async (req, res) => {
   try {
+    console.log('=== CREATE CLASS REQUEST ===');
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+    console.log('User:', {
+      userID: req.user.userID,
+      hasGlobalPermissions: req.user.hasGlobalPermissions,
+      fk_schoolID: req.user.fk_schoolID
+    });
+
     const data = {
       ...req.body,
       fk_schoolID: req.user.hasGlobalPermissions ? req.body.fk_schoolID : req.user.fk_schoolID,
       completionDate: req.body.completionDate ? new Date(req.body.completionDate) : null
     };
 
-    console.log('Attempting to create class with data:', data);
+    console.log('Data to be inserted:', JSON.stringify(data, null, 2));
 
     // Validate required foreign keys exist
+    console.log('Validating foreign keys...');
     if (data.fk_schoolID) {
+      console.log('Checking school ID:', data.fk_schoolID);
       const schoolExists = await prisma.school.findFirst({
         where: { schoolID: parseInt(data.fk_schoolID), deletedAt: null }
       });
       if (!schoolExists) {
+        console.error('School not found:', data.fk_schoolID);
         return res.status(400).json({ error: 'Invalid school ID' });
       }
+      console.log('School validated:', schoolExists.name);
     }
 
     if (data.fk_locationID) {
+      console.log('Checking location ID:', data.fk_locationID);
       const locationExists = await prisma.location.findFirst({
         where: { locationID: parseInt(data.fk_locationID), deletedAt: null }
       });
       if (!locationExists) {
+        console.error('Location not found:', data.fk_locationID);
         return res.status(400).json({ error: 'Invalid location ID' });
       }
+      console.log('Location validated:', locationExists.name);
     }
 
     if (data.fk_courseID) {
+      console.log('Checking course ID:', data.fk_courseID);
       const courseExists = await prisma.course.findFirst({
         where: { courseID: parseInt(data.fk_courseID), deletedAt: null }
       });
       if (!courseExists) {
+        console.error('Course not found:', data.fk_courseID);
         return res.status(400).json({ error: 'Invalid course ID' });
       }
+      console.log('Course validated:', courseExists.name);
     }
 
     if (data.fk_InstructorID) {
+      console.log('Checking instructor ID:', data.fk_InstructorID);
       const instructorExists = await prisma.instructor.findFirst({
         where: { instructorID: parseInt(data.fk_InstructorID), deletedAt: null }
       });
       if (!instructorExists) {
+        console.error('Instructor not found:', data.fk_InstructorID);
         return res.status(400).json({ error: 'Invalid instructor ID' });
       }
+      console.log('Instructor validated:', `${instructorExists.firstName} ${instructorExists.lastName}`);
     }
 
     const classData = await prisma.class.create({
@@ -160,16 +181,19 @@ router.post('/', async (req, res) => {
       }
     });
 
+    console.log('Class created successfully:', classData.classID);
     res.status(201).json(classData);
   } catch (error) {
-    console.error('Error creating class:', error);
-    console.error('Error details:', error.message);
-    if (error.code) {
-      console.error('Error code:', error.code);
-    }
+    console.error('=== ERROR CREATING CLASS ===');
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Error code:', error.code);
+    console.error('Error meta:', error.meta);
+    console.error('Error stack:', error.stack);
     res.status(500).json({ 
       error: 'Failed to create class',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      details: error.message,
+      code: error.code
     });
   }
 });

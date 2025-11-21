@@ -77,6 +77,7 @@ export default {
     })
 
     const columns = [
+      { name: 'name', label: 'Class Name', align: 'left', field: row => row.name || row.course?.name || 'Unnamed Class' },
       { name: 'school', label: 'School', align: 'left', field: row => row.school?.name },
       { name: 'location', label: 'Location', align: 'left', field: row => row.location?.name },
       { name: 'instructor', label: 'Instructor', align: 'left', field: row => row.instructor ? `${row.instructor.firstName} ${row.instructor.lastName}` : 'N/A' },

@@ -1,11 +1,21 @@
 <template>
   <q-page padding>
     <div class="row justify-between items-center q-mb-lg">
-      <div class="text-h4">{{ isEdit ? 'Edit Student' : 'Add Student' }}</div>
-      <q-btn flat label="Back to List" icon="arrow_back" @click="$router.push('/students')" />
+      <div>
+        <div class="text-h4">{{ isEdit ? 'Edit Student' : 'Add Student' }}</div>
+        <div class="text-subtitle2 text-grey-7" v-if="selectedClassName && !isEdit">
+          Adding to: {{ selectedClassName }}
+        </div>
+      </div>
+      <q-btn 
+        flat 
+        :label="$route.query.classID ? 'Back to Class' : 'Back to List'" 
+        icon="arrow_back" 
+        @click="$route.query.classID ? $router.push(`/classes/${$route.query.classID}/manage`) : $router.push('/students')" 
+      />
     </div>
 
-    <q-card>
+    <q-card class="q-px-md">
       <q-card-section>
         <q-form @submit="onSubmit" class="q-gutter-md">
           <div class="row q-col-gutter-md">
@@ -23,6 +33,7 @@
                 outlined
                 label="Middle Initial"
                 maxlength="1"
+                bottom-slots
               />
             </div>
             <div class="col-12 col-md-4">
@@ -65,11 +76,15 @@
                 :rules="[val => !!val || 'Required']"
               />
             </div>
+          </div>
+
+          <div class="row q-col-gutter-md">
             <div class="col-12">
               <q-input
                 v-model="form.addressLine2"
                 outlined
                 label="Address Line 2"
+                bottom-slots
               />
             </div>
           </div>
@@ -136,6 +151,7 @@
                 outlined
                 label="SSN Last 4"
                 maxlength="4"
+                bottom-slots
               />
             </div>
           </div>
@@ -156,7 +172,7 @@
                 outlined
                 label="Class *"
                 :options="classes"
-                :option-label="opt => `${opt.course?.name || 'Class'} - ${formatDate(opt.completionDate)}`"
+                :option-label="opt => `${opt.name || opt.course?.name || 'Class'} - ${formatDate(opt.completionDate)}`"
                 option-value="classID"
                 emit-value
                 map-options
@@ -166,7 +182,7 @@
                 <template v-slot:option="scope">
                   <q-item v-bind="scope.itemProps">
                     <q-item-section>
-                      <q-item-label>{{ scope.opt.course?.name || 'Class' }}</q-item-label>
+                      <q-item-label>{{ scope.opt.name || scope.opt.course?.name || 'Class' }}</q-item-label>
                       <q-item-label caption>{{ formatDate(scope.opt.completionDate) }} - {{ scope.opt.location?.name }}</q-item-label>
                     </q-item-section>
                   </q-item>
@@ -178,13 +194,18 @@
             </div>
           </div>
 
-          <q-input
-            v-model="form.notes"
-            outlined
-            type="textarea"
-            label="Notes"
-            rows="3"
-          />
+          <div class="row q-col-gutter-md">
+            <div class="col-12">
+              <q-input
+                v-model="form.notes"
+                outlined
+                type="textarea"
+                label="Notes"
+                rows="3"
+                bottom-slots
+              />
+            </div>
+          </div>
 
           <div class="row q-gutter-md">
             <q-btn
@@ -206,7 +227,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useQuasar, date } from 'quasar'
 import { studentsAPI, publicAPI, classesAPI } from 'src/services/api'
@@ -228,6 +249,17 @@ export default {
     const isPaid = ref(false)
     const states = ref([])
     const classes = ref([])
+    
+    // Computed property for selected class name
+    const selectedClassName = computed(() => {
+      if (form.value.fk_classID && classes.value.length > 0) {
+        const selectedClass = classes.value.find(c => c.classID === form.value.fk_classID)
+        if (selectedClass) {
+          return `${selectedClass.name || selectedClass.course?.name || 'Class'} - ${formatDate(selectedClass.completionDate)}`
+        }
+      }
+      return ''
+    })
 
     const form = ref({
       firstName: '',
@@ -248,6 +280,17 @@ export default {
       fk_schoolID: authStore.userSchoolId,
       isPaid: 0,
       notes: ''
+    })
+
+    // Automatically set student's school based on selected class
+    watch(() => form.value.fk_classID, (newClassID) => {
+      if (newClassID && !isEdit.value) {
+        const selectedClass = classes.value.find(c => c.classID === newClassID)
+        if (selectedClass && selectedClass.fk_schoolID) {
+          console.log('Auto-setting school from class:', selectedClass.fk_schoolID)
+          form.value.fk_schoolID = selectedClass.fk_schoolID
+        }
+      }
     })
 
     const loadStudent = async () => {
@@ -299,7 +342,12 @@ export default {
           })
         }
 
-        router.push('/students')
+        // Redirect back to class management if we came from there, otherwise go to students list
+        if (route.query.classID) {
+          router.push(`/classes/${route.query.classID}/manage`)
+        } else {
+          router.push('/students')
+        }
       } catch (error) {
         $q.notify({
           type: 'negative',
@@ -332,6 +380,16 @@ export default {
       try {
         const response = await classesAPI.list({ limit: 1000 })
         classes.value = response.data.classes
+        
+        // If classID is provided in query params, pre-select it
+        if (route.query.classID && !isEdit.value) {
+          const classID = parseInt(route.query.classID)
+          const classExists = classes.value.find(c => c.classID === classID)
+          if (classExists) {
+            form.value.fk_classID = classID
+            console.log('Pre-selected class from query:', classID)
+          }
+        }
       } catch (error) {
         console.error('Failed to load classes:', error)
       } finally {
@@ -359,6 +417,7 @@ export default {
       isEdit,
       states,
       classes,
+      selectedClassName,
       formatDate,
       onSubmit
     }

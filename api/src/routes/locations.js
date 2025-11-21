@@ -86,6 +86,14 @@ router.get('/:id', async (req, res) => {
 // POST /locations
 router.post('/', async (req, res) => {
   try {
+    console.log('=== CREATE LOCATION REQUEST ===');
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+    console.log('User:', {
+      userID: req.user.userID,
+      hasGlobalPermissions: req.user.hasGlobalPermissions,
+      fk_schoolID: req.user.fk_schoolID
+    });
+
     const data = {
       ...req.body,
       fk_schoolID: req.user.hasGlobalPermissions ? req.body.fk_schoolID : req.user.fk_schoolID
@@ -94,6 +102,47 @@ router.post('/', async (req, res) => {
     // Remove number field if provided - it will be auto-generated
     delete data.number;
 
+    console.log('Data to be inserted:', JSON.stringify(data, null, 2));
+
+    // Validate foreign keys exist
+    console.log('Validating foreign keys...');
+    
+    if (data.fk_schoolID) {
+      console.log('Checking school ID:', data.fk_schoolID);
+      const schoolExists = await prisma.school.findFirst({
+        where: { schoolID: parseInt(data.fk_schoolID), deletedAt: null }
+      });
+      if (!schoolExists) {
+        console.error('School not found:', data.fk_schoolID);
+        return res.status(400).json({ error: `Invalid school ID: ${data.fk_schoolID}` });
+      }
+      console.log('School validated:', schoolExists.name);
+    }
+
+    if (data.fk_stateID) {
+      console.log('Checking state ID:', data.fk_stateID);
+      const stateExists = await prisma.state.findFirst({
+        where: { stateID: parseInt(data.fk_stateID), deletedAt: null }
+      });
+      if (!stateExists) {
+        console.error('State not found:', data.fk_stateID);
+        // Query to show available states
+        const availableStates = await prisma.state.findMany({
+          where: { deletedAt: null },
+          select: { stateID: true, name: true, abbreviation: true },
+          take: 10
+        });
+        console.error('Available states (first 10):', availableStates);
+        return res.status(400).json({ 
+          error: `Invalid state ID: ${data.fk_stateID}`,
+          availableStates: availableStates
+        });
+      }
+      console.log('State validated:', stateExists.name);
+    }
+
+    console.log('All validations passed. Creating location...');
+
     // Create location first to get the auto-incremented ID
     const location = await prisma.location.create({
       data,
@@ -101,6 +150,8 @@ router.post('/', async (req, res) => {
         school: true
       }
     });
+
+    console.log('Location created successfully:', location.locationID);
 
     // Auto-generate location number based on locationID (padded to 3 digits)
     const generatedNumber = String(location.locationID).padStart(3, '0');
@@ -116,8 +167,17 @@ router.post('/', async (req, res) => {
 
     res.status(201).json(updatedLocation);
   } catch (error) {
-    console.error('Error creating location:', error);
-    res.status(500).json({ error: 'Failed to create location' });
+    console.error('=== ERROR CREATING LOCATION ===');
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Error code:', error.code);
+    console.error('Error meta:', error.meta);
+    console.error('Full error:', error);
+    res.status(500).json({ 
+      error: 'Failed to create location',
+      details: error.message,
+      code: error.code
+    });
   }
 });
 

@@ -4,7 +4,7 @@
       <div>
         <div class="text-h4">Manage Class</div>
         <div class="text-subtitle1 text-grey-7" v-if="classData">
-          {{ classData.course?.name }} - {{ formatDate(classData.completionDate) }}
+          {{ classData.name || classData.course?.name || 'Class' }} - {{ formatDate(classData.completionDate) }}
         </div>
       </div>
       <div class="q-gutter-sm">
@@ -57,7 +57,7 @@
             color="primary"
             label="Add Student"
             icon="person_add"
-            @click="showAddStudent = true"
+            @click="$router.push(`/students/add?classID=${$route.params.id}`)"
           />
           <q-btn
             color="green"

@@ -130,11 +130,88 @@ router.get('/:id', async (req, res) => {
 // POST /students
 router.post('/', async (req, res) => {
   try {
+    console.log('=== CREATE STUDENT REQUEST ===');
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+    console.log('User:', {
+      userID: req.user.userID,
+      hasGlobalPermissions: req.user.hasGlobalPermissions,
+      fk_schoolID: req.user.fk_schoolID
+    });
+
+    // Validate and get class first to determine school
+    let classSchoolID = null;
+    if (req.body.fk_classID) {
+      console.log('Checking class ID:', req.body.fk_classID);
+      const classExists = await prisma.class.findFirst({
+        where: { classID: parseInt(req.body.fk_classID), deletedAt: null }
+      });
+      if (!classExists) {
+        console.error('Class not found:', req.body.fk_classID);
+        return res.status(400).json({ error: `Invalid class ID: ${req.body.fk_classID}` });
+      }
+      console.log('Class validated');
+      classSchoolID = classExists.fk_schoolID;
+      console.log('Class belongs to school:', classSchoolID);
+    }
+
     const data = {
       ...req.body,
-      fk_schoolID: req.user.hasGlobalPermissions ? req.body.fk_schoolID : req.user.fk_schoolID,
+      // Set student's school to match the class's school
+      fk_schoolID: classSchoolID || (req.user.hasGlobalPermissions ? req.body.fk_schoolID : req.user.fk_schoolID),
       birthDate: new Date(req.body.birthDate)
     };
+
+    console.log('Data to be inserted:', JSON.stringify(data, null, 2));
+
+    // Validate foreign keys exist
+    console.log('Validating foreign keys...');
+    
+    if (data.fk_schoolID) {
+      console.log('Checking school ID:', data.fk_schoolID);
+      const schoolExists = await prisma.school.findFirst({
+        where: { schoolID: parseInt(data.fk_schoolID), deletedAt: null }
+      });
+      if (!schoolExists) {
+        console.error('School not found:', data.fk_schoolID);
+        return res.status(400).json({ error: `Invalid school ID: ${data.fk_schoolID}` });
+      }
+      console.log('School validated:', schoolExists.name);
+    }
+
+    if (data.fk_stateID) {
+      console.log('Checking state ID:', data.fk_stateID);
+      const stateExists = await prisma.state.findFirst({
+        where: { stateID: parseInt(data.fk_stateID), deletedAt: null }
+      });
+      if (!stateExists) {
+        console.error('State not found:', data.fk_stateID);
+        const availableStates = await prisma.state.findMany({
+          where: { deletedAt: null },
+          select: { stateID: true, name: true, abbreviation: true },
+          take: 10
+        });
+        console.error('Available states (first 10):', availableStates);
+        return res.status(400).json({ 
+          error: `Invalid state ID: ${data.fk_stateID}`,
+          availableStates: availableStates
+        });
+      }
+      console.log('State validated:', stateExists.name);
+    }
+
+    if (data.fk_licenseStateID) {
+      console.log('Checking license state ID:', data.fk_licenseStateID);
+      const licenseStateExists = await prisma.state.findFirst({
+        where: { stateID: parseInt(data.fk_licenseStateID), deletedAt: null }
+      });
+      if (!licenseStateExists) {
+        console.error('License state not found:', data.fk_licenseStateID);
+        return res.status(400).json({ error: `Invalid license state ID: ${data.fk_licenseStateID}` });
+      }
+      console.log('License state validated:', licenseStateExists.name);
+    }
+
+    console.log('All validations passed. Creating student...');
 
     const student = await prisma.student.create({
       data,
@@ -144,10 +221,20 @@ router.post('/', async (req, res) => {
       }
     });
 
+    console.log('Student created successfully:', student.studentID);
     res.status(201).json(student);
   } catch (error) {
-    console.error('Error creating student:', error);
-    res.status(500).json({ error: 'Failed to create student' });
+    console.error('=== ERROR CREATING STUDENT ===');
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Error code:', error.code);
+    console.error('Error meta:', error.meta);
+    console.error('Full error:', error);
+    res.status(500).json({ 
+      error: 'Failed to create student',
+      details: error.message,
+      code: error.code
+    });
   }
 });
 

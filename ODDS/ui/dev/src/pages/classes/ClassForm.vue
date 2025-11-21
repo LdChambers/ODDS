@@ -5,39 +5,55 @@
       <q-btn flat label="Back to List" icon="arrow_back" @click="$router.push('/classes')" />
     </div>
 
-    <q-card>
+    <q-card class="q-px-md">
       <q-card-section>
         <q-form @submit="onSubmit" class="q-gutter-md">
           <div class="row q-col-gutter-md">
-            <div class="col-12 col-md-6">
-              <q-select
-                v-model="form.fk_courseID"
+            <div class="col-12">
+              <q-input
+                v-model="form.name"
                 outlined
-                label="Course *"
-                :options="courses"
+                label="Class Name"
+                hint="Optional descriptive name for this class"
+                bottom-slots
+              />
+            </div>
+          </div>
+
+          <div class="row q-col-gutter-md">
+            <div class="col-12">
+              <q-select
+                v-model="form.fk_schoolID"
+                outlined
+                label="School *"
+                :options="schools"
                 option-label="name"
-                option-value="courseID"
+                option-value="schoolID"
                 emit-value
                 map-options
                 :rules="[val => !!val || 'Required']"
                 :loading="loadingOptions"
+                :disable="!authStore.hasGlobalPermissions"
               >
                 <template v-slot:option="scope">
                   <q-item v-bind="scope.itemProps">
                     <q-item-section>
                       <q-item-label>{{ scope.opt.name }}</q-item-label>
-                      <q-item-label caption>{{ scope.opt.description }}</q-item-label>
+                      <q-item-label caption>{{ scope.opt.city }}</q-item-label>
                     </q-item-section>
                   </q-item>
                 </template>
               </q-select>
             </div>
+          </div>
+
+          <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
               <q-select
                 v-model="form.fk_InstructorID"
                 outlined
                 label="Instructor *"
-                :options="instructors"
+                :options="filteredInstructors"
                 :option-label="opt => `${opt.firstName} ${opt.lastName}`"
                 option-value="instructorID"
                 emit-value
@@ -106,14 +122,18 @@
             </div>
           </div>
 
-          <q-input
-            v-model="form.notes"
-            outlined
-            type="textarea"
-            label="Notes"
-            rows="3"
-            hint="Additional class information"
-          />
+          <div class="row q-col-gutter-md">
+            <div class="col-12">
+              <q-input
+                v-model="form.notes"
+                outlined
+                type="textarea"
+                label="Notes"
+                rows="3"
+                hint="Additional class information"
+              />
+            </div>
+          </div>
 
           <div class="row q-gutter-md">
             <q-btn
@@ -131,10 +151,10 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useQuasar } from 'quasar'
-import { classesAPI, coursesAPI, instructorsAPI, locationsAPI } from 'src/services/api'
+import { classesAPI, instructorsAPI, locationsAPI, schoolsAPI } from 'src/services/api'
 import { useAuthStore } from 'src/stores/auth'
 
 export default {
@@ -150,12 +170,12 @@ export default {
     const loadingOptions = ref(false)
     const isEdit = computed(() => !!route.params.id)
 
-    const courses = ref([])
+    const schools = ref([])
     const instructors = ref([])
     const locations = ref([])
 
     const form = ref({
-      fk_courseID: null,
+      name: '',
       fk_InstructorID: null,
       fk_locationID: null,
       fk_schoolID: authStore.userSchoolId,
@@ -164,16 +184,29 @@ export default {
       notes: ''
     })
 
+    // Filter instructors based on selected school
+    const filteredInstructors = computed(() => {
+      if (!form.value.fk_schoolID) return []
+      return instructors.value.filter(instructor => instructor.fk_schoolID === form.value.fk_schoolID)
+    })
+
+    // Reset instructor when school changes
+    watch(() => form.value.fk_schoolID, (newSchoolId, oldSchoolId) => {
+      if (newSchoolId !== oldSchoolId && !isEdit.value) {
+        form.value.fk_InstructorID = null
+      }
+    })
+
     const loadOptions = async () => {
       loadingOptions.value = true
       try {
-        const [coursesRes, instructorsRes, locationsRes] = await Promise.all([
-          coursesAPI.list(),
+        const [schoolsRes, instructorsRes, locationsRes] = await Promise.all([
+          schoolsAPI.list({ limit: 1000 }),
           instructorsAPI.list({ limit: 1000 }),
           locationsAPI.list({ limit: 1000 })
         ])
         
-        courses.value = coursesRes.data.courses || []
+        schools.value = schoolsRes.data.schools || []
         instructors.value = instructorsRes.data.instructors || []
         locations.value = locationsRes.data.locations || []
       } catch (error) {
@@ -256,9 +289,11 @@ export default {
       loading,
       loadingOptions,
       isEdit,
-      courses,
+      schools,
       instructors,
+      filteredInstructors,
       locations,
+      authStore,
       onSubmit
     }
   }
