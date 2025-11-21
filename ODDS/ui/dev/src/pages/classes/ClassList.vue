@@ -12,6 +12,8 @@
       :loading="loading"
       :pagination="pagination"
       @request="onRequest"
+      @row-click="(evt, row) => manageClass(row)"
+      class="cursor-pointer"
     >
       <template v-slot:body-cell-completionDate="props">
         <q-td :props="props">
@@ -40,9 +42,6 @@
         <q-td :props="props">
           <q-btn flat dense round icon="edit" color="primary" @click="editClass(props.row)">
             <q-tooltip>Edit</q-tooltip>
-          </q-btn>
-          <q-btn flat dense round icon="manage_accounts" color="green" @click="manageClass(props.row)">
-            <q-tooltip>Manage Students</q-tooltip>
           </q-btn>
           <q-btn flat dense round icon="qr_code" color="purple" @click="showQR(props.row)">
             <q-tooltip>QR Code</q-tooltip>
