@@ -8,7 +8,7 @@
     </div>
 
     <!-- Global Search -->
-    <q-card class="q-mb-lg">
+    <q-card class="q-mb-lg" v-if="false">
       <q-card-section>
         <div class="text-h6 q-mb-md">Search Students</div>
         <q-input
